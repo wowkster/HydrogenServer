@@ -1,0 +1,1 @@
+export type UUID = string | Buffer | Uint8Array
