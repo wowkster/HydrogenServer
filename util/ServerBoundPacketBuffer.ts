@@ -1,4 +1,6 @@
 import Long from 'long'
+import Identifier from './Identifier'
+import Vector from './Vector'
 
 class ServerBoundPacketBuffer {
     private static SEGMENT_BITS = 0x7f
@@ -137,19 +139,46 @@ class ServerBoundPacketBuffer {
         return this.buffer.readFloatBE(this.position - 4)
     }
 
-    readNumber(): number {
+    readDouble(): number {
         this.position += 8
         return this.buffer.readDoubleBE(this.position - 8)
     }
 
     readString(maxLen?: number): string {
         const length = this.readVarInt()
-        
+
         if (typeof maxLen != 'undefined' && length > maxLen) throw new Error('String is over max specified length')
 
         const val = this.buffer.toString('utf-8', this.position, this.position + length)
         this.position += length
         return val
+    }
+
+    readIdentifier(): Identifier {
+        return new Identifier(this.readString())
+    }
+
+    readBuffer(): Buffer {
+        const buff = this.buffer.slice(this.position)
+        this.position = this.buffer.length - 1
+        return buff
+    }
+
+    readEncodedBuffer(): ServerBoundPacketBuffer {
+        return new ServerBoundPacketBuffer(this.readBuffer(), true)
+    }
+
+    readPosition(): Vector {
+        const buff = Buffer.alloc(8)
+        buff.writeBigInt64BE(this.readLong())
+
+        let val = new Long(buff.readInt32BE(4), buff.readInt32BE())
+
+        const x = val.shiftRight(38)
+        const y = val.shiftLeft(52).shiftRight(52)
+        const z = val.shiftRight(12).and(0x3FFFFFF)
+
+        return new Vector(x.toInt(), y.toInt(), z.toInt())
     }
 }
 

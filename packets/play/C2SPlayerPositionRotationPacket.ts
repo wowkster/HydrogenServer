@@ -1,0 +1,22 @@
+import C2SPacket from '../C2SPacket'
+import ServerBoundPacketBuffer from '../../util/ServerBoundPacketBuffer'
+
+export default class C2SPlayerPositionRotationPacket extends C2SPacket {
+    x: number
+    y: number
+    z: number
+    yaw: number
+    pitch: number
+    onGround: boolean
+    
+    constructor(packetBuffer: ServerBoundPacketBuffer) {
+        super(packetBuffer)
+        
+        this.x = packetBuffer.readDouble()
+        this.y = packetBuffer.readDouble()
+        this.z = packetBuffer.readDouble()
+        this.yaw = packetBuffer.readFloat()
+        this.pitch = packetBuffer.readFloat()
+        this.onGround = packetBuffer.readBoolean()
+    }
+}

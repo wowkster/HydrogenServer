@@ -5,17 +5,18 @@ import S2CPacket from '../S2CPacket';
 import {readFileSync} from 'fs'
 
 export default class S2CJoinGamePacket extends S2CPacket {
-    constructor() {
+    constructor(clientEntityID: number) {
         super(0x26)
 
-        this.packetBuffer.writeInt(0) // Client EID
+        this.packetBuffer.writeInt(clientEntityID) // Client EID
         this.packetBuffer.writeBoolean(false) // is Hardcore
-        this.packetBuffer.writeUnsignedByte(GameMode.CREATIVE) // Gamemode
-        this.packetBuffer.writeByte(GameMode.CREATIVE) // Previous Gamemode
+        this.packetBuffer.writeUnsignedByte(GameMode.CREATIVE) // GameMode
+        this.packetBuffer.writeByte(GameMode.CREATIVE) // Previous GameMode
 
         this.packetBuffer.writeVarInt(1) // World Count
         this.packetBuffer.writeIdentifier(new Identifier('overworld')) // Dimension Names
 
+        // TODO Make NBT work correctly
         this.packetBuffer.writeBuffer(readFileSync('./nbt/dimension_codec.nbt'))
         this.packetBuffer.writeBuffer(readFileSync('./nbt/dimension.nbt'))
 

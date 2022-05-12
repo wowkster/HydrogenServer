@@ -10,6 +10,7 @@ export default class C2SHandshakePacket extends C2SPacket {
     
     constructor(packetBuffer: ServerBoundPacketBuffer) {
         super(packetBuffer)
+        
         this.protoVersion = packetBuffer.readVarInt()
         this.serverAddress = packetBuffer.readString(255)
         this.serverPort = packetBuffer.readUnsignedShort()

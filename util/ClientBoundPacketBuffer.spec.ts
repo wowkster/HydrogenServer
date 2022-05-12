@@ -1,5 +1,6 @@
 import ServerBoundPacketBuffer from './ServerBoundPacketBuffer'
 import ClientBoundPacketBuffer from './ClientBoundPacketBuffer'
+import Vector from './Vector'
 
 describe('ClientBoundPacketBuffer writes correctly', () => {
     it('Writes VarInt (0) Correctly', () => {
@@ -132,5 +133,23 @@ describe('ClientBoundPacketBuffer writes correctly', () => {
         let buff = new ClientBoundPacketBuffer()
         buff.writeVarLong(-9223372036854775808n)
         expect(new ServerBoundPacketBuffer(buff.serialize()).readVarLong()).toBe(-9223372036854775808n)
+    })
+
+    it('Writes Position (0, 0, 1) Correctly', () => {
+        let buff = new ClientBoundPacketBuffer()
+        buff.writePosition(new Vector(0, 0, 1))
+        expect(new ServerBoundPacketBuffer(buff.serialize()).readPosition()).toEqual(new Vector(0, 0, 1))
+    })
+    
+    it('Writes Position (12, 4, 1) Correctly', () => {
+        let buff = new ClientBoundPacketBuffer()
+        buff.writePosition(new Vector(12, 4, 1))
+        expect(new ServerBoundPacketBuffer(buff.serialize()).readPosition()).toEqual(new Vector(12, 4, 1))
+    })
+    
+    it('Writes Position (3, -5, 0) Correctly', () => {
+        let buff = new ClientBoundPacketBuffer()
+        buff.writePosition(new Vector(3, -5, 0))
+        expect(new ServerBoundPacketBuffer(buff.serialize()).readPosition()).toEqual(new Vector(3, -5, 0))
     })
 })

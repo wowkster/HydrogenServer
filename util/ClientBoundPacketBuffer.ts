@@ -3,8 +3,11 @@ import { parse } from 'uuid'
 import { ChatComponent } from './Chat'
 import Identifier from './Identifier'
 import nbt from 'prismarine-nbt'
+import UUID, { UUIDResolvable } from './UUID'
+import Position from './Position';
+import Vector from './Vector'
 
-export default class ServerBoundPacketBuffer {
+export default class ClientBoundPacketBuffer {
     private static SEGMENT_BITS = 0x7f
     private static CONTINUE_BIT = 0x80
 
@@ -35,12 +38,12 @@ export default class ServerBoundPacketBuffer {
         const bytes = []
 
         while (true) {
-            if ((value & ~ServerBoundPacketBuffer.SEGMENT_BITS) == 0) {
+            if ((value & ~ClientBoundPacketBuffer.SEGMENT_BITS) == 0) {
                 bytes.push(value)
                 break
             }
 
-            bytes.push((value & ServerBoundPacketBuffer.SEGMENT_BITS) | ServerBoundPacketBuffer.CONTINUE_BIT)
+            bytes.push((value & ClientBoundPacketBuffer.SEGMENT_BITS) | ClientBoundPacketBuffer.CONTINUE_BIT)
 
             // Note: >>> means that the sign bit is shifted with the rest of the number rather than being left alone
             value >>>= 7
@@ -62,15 +65,15 @@ export default class ServerBoundPacketBuffer {
         let val = new Long(buff.readInt32BE(4), buff.readInt32BE())
 
         while (true) {
-            if (val.and(new Long(ServerBoundPacketBuffer.SEGMENT_BITS).not()).eq(0)) {
+            if (val.and(new Long(ClientBoundPacketBuffer.SEGMENT_BITS).not()).eq(0)) {
                 bytes.push(val)
                 break
             }
 
             bytes.push(
                 val
-                    .and(new Long(ServerBoundPacketBuffer.SEGMENT_BITS))
-                    .or(new Long(ServerBoundPacketBuffer.CONTINUE_BIT))
+                    .and(new Long(ClientBoundPacketBuffer.SEGMENT_BITS))
+                    .or(new Long(ClientBoundPacketBuffer.CONTINUE_BIT))
             )
 
             // Note: >>> means that the sign bit is shifted with the rest of the number rather than being left alone
@@ -139,14 +142,8 @@ export default class ServerBoundPacketBuffer {
         this.buffers.push(Buffer.concat([this.encodeVarInt(buff.length), buff]))
     }
 
-    writeUUID(uuid: string | Buffer | Uint8Array): void {
-        if (typeof uuid === 'string') {
-            this.buffers.push(Buffer.from(parse(uuid) as Uint8Array))
-            return
-        }
-
-        if (uuid.length != 16) throw new Error('UUID length is not correct')
-        this.buffers.push(Buffer.from(uuid))
+    writeUUID(uuid: UUIDResolvable): void {
+        this.buffers.push(Buffer.from(UUID.serialize(uuid)))
     }
 
     writeJSON(json: object) {
@@ -167,6 +164,25 @@ export default class ServerBoundPacketBuffer {
     }
 
     writeBuffer(buff: Buffer) {
+        this.buffers.push(buff)
+    }
+
+    writePosition(pos: Vector | Position) {
+        const {x, y, z} = pos
+
+        // ((x & 0x3FFFFFF) << 38) | ((z & 0x3FFFFFF) << 12) | (y & 0xFFF)
+
+        let xl = new Long(x & 0x3FFFFFF).shiftLeft(38)
+        let zl = new Long(z & 0x3FFFFFF).shiftLeft(12)
+        let yl = new Long(y & 0xFFF)
+
+        let value = xl.or(zl).or(yl)
+
+        let buff = Buffer.alloc(8)
+
+        buff.writeUInt32BE(value.getLowBitsUnsigned(), 4)
+        buff.writeUInt32BE(value.getHighBitsUnsigned())
+
         this.buffers.push(buff)
     }
 }

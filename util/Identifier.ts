@@ -2,9 +2,29 @@ export default class Identifier {
     readonly namespace: string
     readonly value: string
 
-    constructor(value: string, namespace = 'minecraft') {
-        this.value = value
-        this.namespace = namespace
+    /**
+     * Three possibilities:
+     * new Identifier('minecraft:brand')
+     * new Identifier('brand')
+     * new Identifier('minecraft', 'brand')
+     */
+    constructor(namespace: string, value?: string) {
+        if (typeof value !== 'undefined') {
+            this.namespace = namespace
+            this.value = value
+            return
+        }
+
+        const split = namespace.split(':')
+
+        if (split.length > 2) throw new Error('Malformed Identifier')
+        else if (split.length == 1) {
+            this.namespace = 'minecraft'
+            this.value = split[0]
+        } else {
+            this.namespace = split[0]
+            this.value = split[1]
+        }
     }
 
     static from(identifier: string): Identifier {
@@ -25,5 +45,11 @@ export default class Identifier {
 
     toString() {
         return `${this.namespace}:${this.value}`
+    }
+
+    equals(other: string | Identifier) {
+        const otherID = typeof other === 'string' ? new Identifier(other) : other
+
+        return otherID.namespace === this.namespace &&  otherID.value === this.value 
     }
 }

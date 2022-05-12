@@ -1,4 +1,5 @@
 import ServerBoundPacketBuffer from './ServerBoundPacketBuffer'
+import Vector from './Vector';
 
 describe('ServerBoundPacketBuffer reads correctly', () => {
     test('Reads VarInt (0) correctly', () => {
@@ -127,5 +128,26 @@ describe('ServerBoundPacketBuffer reads correctly', () => {
         expect(buff.readBoolean()).toBe(false)
         expect(buff.readBoolean()).toBe(true)
         expect(buff.readBoolean()).toBe(false)
+    })
+
+    test('Reads Position (0, 0, 1) correctly', () => {
+        let buff = Buffer.alloc(8)
+        buff.writeBigInt64BE(4096n)
+
+        expect(new ServerBoundPacketBuffer(buff, true).readPosition()).toEqual(new Vector(0, 0, 1))
+    })
+
+    test('Reads Position (12, 4, 1) correctly', () => {
+        let buff = Buffer.alloc(8)
+        buff.writeBigInt64BE(3298534887428n)
+
+        expect(new ServerBoundPacketBuffer(buff, true).readPosition()).toEqual(new Vector(12, 4, 1))
+    })
+
+    test('Reads Position (3, -5, 0) correctly', () => {
+        let buff = Buffer.alloc(8)
+        buff.writeBigInt64BE(824633724923n)
+
+        expect(new ServerBoundPacketBuffer(buff, true).readPosition()).toEqual(new Vector(3, -5, 0))
     })
 })

@@ -1,8 +1,11 @@
 import { Socket } from "net"
 import S2CPacket from "../packets/S2CPacket"
-import { UUID } from '../util/UUID';
+import { UUIDResolvable } from '../util/UUID';
 import PlayerAbilities from './play/PlayerAbilities';
 import { ClientSettings } from './play/ClientSettings';
+import chalk from "chalk";
+import PlayerInfo from './play/PlayerInfo';
+import Player from './Player';
 
 export enum ConnectionState {
     HANDSHAKE = 0,
@@ -12,23 +15,25 @@ export enum ConnectionState {
 }
 
 export default class Client {
-    state: ConnectionState
     conn: Socket
-    uuid?: UUID
-    username?: string
+
+    state: ConnectionState
+    protoVersion?: number
+    serverAddress?: string
+    serverPort?: number
+    
     brand?: string
     settings?: ClientSettings
 
-    abilities: PlayerAbilities
+    player?: Player
 
     constructor(conn: Socket) {
         this.conn = conn
-        
         this.state = ConnectionState.HANDSHAKE
-        this.abilities = new PlayerAbilities()
     }
 
     sendPacket(packet: S2CPacket) {
+        console.log(chalk.red('S2C Packet:'), packet)
         this.conn.write(packet.serialize())
     }
 }

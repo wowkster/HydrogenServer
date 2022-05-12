@@ -1,4 +1,3 @@
-import { ConnectionState } from "../../client/client";
 import ServerBoundPacketBuffer from "../../util/ServerBoundPacketBuffer";
 import C2SPacket from '../C2SPacket';
 
