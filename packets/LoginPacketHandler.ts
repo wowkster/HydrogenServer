@@ -75,8 +75,7 @@ export default class LoginPacketHandler extends PacketHandler {
 
         this.sendPacket(new S2CUpdateViewPositionPacket(this.player.chunkX, this.player.chunkZ))
 
-        // TODO Update Light
-        // TODO Chunk Data
+        // TODO Chunk Data & Update Light
 
         this.sendPacket(new S2CInitializeWorldBorderPacket())
 

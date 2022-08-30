@@ -38,7 +38,7 @@ export default class ServerBoundPacketHandler {
                 } catch (err) {
                     if (!(err instanceof UnknownPacketError)) throw err
 
-                    // console.log(chalk.yellow('Caught Unknown Packet'), chalk.gray(`(0x${err.packetBuffer.packetID.toString(16)}):`), err.packetBuffer)
+                    console.log(chalk.yellow('Caught Unknown Packet'), chalk.gray(`(0x${err.packetBuffer.packetID.toString(16)}):`), err.packetBuffer)
                 }
                 break
         }

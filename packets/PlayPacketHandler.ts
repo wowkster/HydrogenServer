@@ -6,6 +6,7 @@ import C2STeleportConfirmPacket from './play/C2STeleportConfirmPacket';
 import C2SPlayerPositionPacket from './play/C2SPlayerPositionPacket';
 import C2SPlayerPositionRotationPacket from './play/C2SPlayerPositionRotationPacket';
 import C2SPlayerRotationPacket from './play/C2SPlayerRotationPacket';
+import C2SPlayerMovementPacket from './play/C2SPlayerMovementPacket';
 
 export default class PlayPacketHandler extends PacketHandler {
     init() {
@@ -16,6 +17,7 @@ export default class PlayPacketHandler extends PacketHandler {
             [0x11, [C2SPlayerPositionPacket, this.onPlayerPosition]],
             [0x12, [C2SPlayerPositionRotationPacket, this.onPlayerPositionRotation]],
             [0x13, [C2SPlayerRotationPacket, this.onPlayerRotation]],
+            [0x14, [C2SPlayerMovementPacket, this.onPlayerMovement]],
         ])
     }
 
@@ -48,6 +50,10 @@ export default class PlayPacketHandler extends PacketHandler {
     }
 
     private onPlayerRotation(this: Client, packet: C2SPlayerRotationPacket) {
+ 
+    }
+
+    private onPlayerMovement(this: Client, packet: C2SPlayerMovementPacket) {
  
     }
 }
