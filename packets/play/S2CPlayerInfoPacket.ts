@@ -10,7 +10,7 @@ export enum PlayerInfoAction {
 }
 
 export default class S2CPlayerInfoPacket extends S2CPacket {
-    constructor(action: PlayerInfoAction, players: PlayerInfo[]) {
+    constructor(readonly action: PlayerInfoAction, readonly players: PlayerInfo[]) {
         super(0x36)
 
         this.writeVarInt(action)

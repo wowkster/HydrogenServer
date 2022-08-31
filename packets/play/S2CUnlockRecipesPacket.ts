@@ -10,7 +10,7 @@ export enum UnlockRecipesAction {
  * https://wiki.vg/Protocol#Unlock_Recipes
  */
 export default class S2CUnlockRecipesPacket extends S2CPacket {
-    constructor(action: UnlockRecipesAction) {
+    constructor(readonly action: UnlockRecipesAction) {
         super(0x39)
 
         // TODO Add Recipes

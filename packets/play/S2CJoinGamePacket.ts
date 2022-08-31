@@ -5,7 +5,7 @@ import S2CPacket from '../S2CPacket';
 import {readFileSync} from 'fs'
 
 export default class S2CJoinGamePacket extends S2CPacket {
-    constructor(clientEntityID: number) {
+    constructor(readonly clientEntityID: number) {
         super(0x26)
 
         this.packetBuffer.writeInt(clientEntityID) // Client EID

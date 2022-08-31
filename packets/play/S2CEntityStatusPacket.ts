@@ -94,7 +94,7 @@ export enum EntityStatus {
     ZOMBIE_VILLAGER_CURE = 16,
 
     GUARDIAN_ATTACK = 21,
-    
+
     MINECART_TNT_IGNITE = 10,
 
     MINECART_SPAWNER_RESET_DELAY = 1,
@@ -105,7 +105,7 @@ export enum EntityStatus {
 }
 
 export default class S2CEntityStatusPacket extends S2CPacket {
-    constructor(entityID: number, entityStatus: EntityStatus) {
+    constructor(readonly entityID: number, readonly entityStatus: EntityStatus) {
         super(0x1b)
 
         this.packetBuffer.writeInt(entityID)

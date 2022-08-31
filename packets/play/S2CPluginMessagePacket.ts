@@ -3,7 +3,7 @@ import Identifier from '../../util/Identifier'
 import S2CPacket from '../S2CPacket'
 
 export default class S2CPluginMessagePacket extends S2CPacket {
-    constructor(channel: Identifier, data: Buffer | string) {
+    constructor(readonly channel: Identifier, readonly data: Buffer | string) {
         super(0x18)
         this.packetBuffer.writeIdentifier(channel)
 
