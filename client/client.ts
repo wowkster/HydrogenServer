@@ -21,6 +21,7 @@ export default class Client {
     protoVersion?: number
     serverAddress?: string
     serverPort?: number
+    compressionEnabled: boolean
 
     // Client Data
     brand?: string
@@ -38,6 +39,8 @@ export default class Client {
         this.conn = conn
         this.state = ConnectionState.HANDSHAKE
 
+        this.compressionEnabled = false
+
         this.waitingForKeepAlive = false
         this.lastKeepAliveIdSent = 0
         this.lastKeepAliveReceived = new Date()
@@ -45,7 +48,7 @@ export default class Client {
 
     sendPacket(packet: S2CPacket) {
         console.log(chalk.red('S2C Packet:'), packet)
-        this.conn.write(packet.serialize())
+        this.conn.write(packet.serialize(this.compressionEnabled))
     }
 
     disconnect(reason: string) {

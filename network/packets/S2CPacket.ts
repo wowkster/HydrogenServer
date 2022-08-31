@@ -14,8 +14,8 @@ export default abstract class S2CPacket {
         this.packetBuffer = new ClientBoundPacketBuffer(packetId)
     }
 
-    serialize(): Buffer {
-        return this.packetBuffer.serialize()
+    serialize(compress = false): Buffer {
+        return this.packetBuffer.serialize(false, compress)
     }
 
     protected writeVarInt(value: number) {

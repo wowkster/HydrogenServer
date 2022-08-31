@@ -23,6 +23,8 @@ export default class MinecraftServer {
     static readonly PROTO_VERSION = 758
     static readonly MC_VERSION = '1.18.2'
     static readonly INSTANCE = new MinecraftServer()
+    
+    static readonly PACKET_COMPRESSION_THRESHOLD = 1_000
 
     private static readonly MAX_TPS = 4
     private static readonly MAX_MSPT = 1000 / MinecraftServer.MAX_TPS
@@ -52,7 +54,7 @@ export default class MinecraftServer {
             this.clients.set(remoteAddress, client)
 
             conn.on('data', buff => {
-                const packetBuffs = ServerBoundPacketBuffer.fromRawBuffer(buff)
+                const packetBuffs = ServerBoundPacketBuffer.separateFromRawBuffer(buff, client.compressionEnabled)
 
                 for (let packetBuffer of packetBuffs) {
                     this.packetHandler.handle(client, packetBuffer)

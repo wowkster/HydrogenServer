@@ -1,4 +1,5 @@
 import Long from 'long'
+import zlib from 'zlib'
 
 import Identifier from '../datatypes/Identifier'
 import Vector from '../datatypes/Vector'
@@ -11,31 +12,45 @@ class ServerBoundPacketBuffer {
     private position: number = 0
 
     readonly length: number
-    readonly lengthBytes: number
+    readonly lengthPrefixBytes: number
     readonly packetID: number
 
-    constructor(buffer: Buffer, partial?: true) {
+    constructor(buffer: Buffer, partial?: boolean, compressed?: boolean) {
         this.buffer = buffer
 
         if (partial) {
             this.length = buffer.length
             this.packetID = -0x01
-            this.lengthBytes = 0
+            this.lengthPrefixBytes = 0
             return
         }
 
-        this.length = this.readVarInt()
-        this.lengthBytes = Number(this.position)
-        this.packetID = this.readVarInt()
+        if (!compressed) {
+            this.length = this.readVarInt()
+            this.lengthPrefixBytes = Number(this.position)
+            this.packetID = this.readVarInt()
+        } else {
+            this.length = this.readVarInt()
+            this.lengthPrefixBytes = Number(this.position)
+
+            const dataLength = this.readVarInt()
+
+            if (dataLength) {
+                this.buffer = zlib.inflateSync(buffer.slice(this.position, this.position + dataLength))
+                this.position = 0
+            }
+
+            this.packetID = this.readVarInt()
+        }
     }
 
     /**
      * Separate Packets from each other by length
      */
-    static fromRawBuffer(buff: Buffer): ServerBoundPacketBuffer[] {
-        const packet = new ServerBoundPacketBuffer(buff)
+    static separateFromRawBuffer(buff: Buffer, compressed?: boolean): ServerBoundPacketBuffer[] {       
+        const packet = new ServerBoundPacketBuffer(buff, false, compressed)
 
-        if (packet.buffer.length == packet.length + packet.lengthBytes) {
+        if (packet.buffer.length == packet.length + packet.lengthPrefixBytes) {
             return [packet]
         }
 
@@ -44,10 +59,10 @@ class ServerBoundPacketBuffer {
         let buffer = packet.buffer
 
         while (buffer.length > 0) {
-            const pack = new ServerBoundPacketBuffer(buffer)
-            const delim = pack.length + pack.lengthBytes
-            const packBuff = pack.buffer.slice(0, delim)
-            packets.push(new ServerBoundPacketBuffer(packBuff))
+            const pack = new ServerBoundPacketBuffer(buffer, false, compressed)
+            const delim = pack.length + pack.lengthPrefixBytes
+            const packBuff = buffer.slice(0, delim)
+            packets.push(new ServerBoundPacketBuffer(packBuff, false, compressed))
 
             buffer = buffer.slice(delim)
         }

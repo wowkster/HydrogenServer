@@ -2,6 +2,8 @@ import chalk from 'chalk'
 import Long from 'long'
 import nbt from 'prismarine-nbt'
 import util from 'util'
+import zlib from 'zlib'
+import MinecraftServer from '..'
 
 import BitSet from '../datatypes/BitSet'
 import { ChatComponent } from '../datatypes/Chat'
@@ -24,7 +26,7 @@ export default class ClientBoundPacketBuffer {
         this.buffers = []
     }
 
-    serialize(partial?: boolean): Buffer {
+    serialize(partial?: boolean, compress?: boolean): Buffer {
         const data = Buffer.concat(this.buffers)
 
         if (partial) return data
@@ -32,9 +34,26 @@ export default class ClientBoundPacketBuffer {
         const packetID = this.encodeVarInt(this.packetID)
 
         const payload = Buffer.concat([packetID, data])
+
+        return compress ? this.serializeCompressed(payload) : this.serializeUncompressed(payload)
+    }
+
+    private serializeUncompressed(payload: Buffer): Buffer {
         const length = this.encodeVarInt(payload.length)
 
         return Buffer.concat([length, payload])
+    }
+
+    private serializeCompressed(payload: Buffer): Buffer {
+        const shouldCompress = payload.length < MinecraftServer.PACKET_COMPRESSION_THRESHOLD
+
+        const dataLength = this.encodeVarInt(shouldCompress ? payload.length : 0)
+        const compressedPayload = shouldCompress ? zlib.deflateSync(payload) : payload
+
+        const combinedPayload = Buffer.concat([dataLength, compressedPayload])
+        const combinedLength = this.encodeVarInt(combinedPayload.length)
+
+        return Buffer.concat([combinedLength, combinedPayload])
     }
 
     private encodeVarInt(value: number): Buffer {

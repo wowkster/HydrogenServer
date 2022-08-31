@@ -25,6 +25,8 @@ import S2CTagsPacket from '../packets/play/S2CTagsPacket'
 import S2CUnlockRecipesPacket, { UnlockRecipesAction } from '../packets/play/S2CUnlockRecipesPacket'
 import S2CUpdateViewPositionPacket from '../packets/play/S2CUpdateViewPositionPacket'
 import AbstractPacketHandler from './AbstractPacketHandler'
+import MinecraftServer from '../..'
+import S2CSetCompressionPacket from '../packets/login/S2CSetCompressionPacket'
 
 export default class LoginPacketHandler extends AbstractPacketHandler {
     init() {
@@ -36,7 +38,11 @@ export default class LoginPacketHandler extends AbstractPacketHandler {
     }
 
     private onLoginStart(this: Client, packet: C2SLoginStartPacket) {
-        // TODO Add compression and encryption
+        // TODO Add encryption
+
+        // Enable packet compression
+        this.sendPacket(new S2CSetCompressionPacket(MinecraftServer.PACKET_COMPRESSION_THRESHOLD))
+        this.compressionEnabled = true
 
         // Skip all the other login steps and send login success
         this.player = new Player(UUID.ZERO, packet.username, this)
