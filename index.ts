@@ -11,6 +11,7 @@ import { UUIDResolvable } from './util/UUID'
 import Player from './client/Player'
 import RollingArray from './util/RollingArray'
 import MathUtils from './util/MathUtils'
+import S2CKeepAlivePacket from './packets/play/S2CKeepAlivePacket'
 
 interface Tick {
     start: number
@@ -125,9 +126,25 @@ export default class MinecraftServer {
     }
 
     async tick() {
-        // Do game stuff
-        // Overrun tick to test
-        await new Promise(resolve => setTimeout(resolve, 25))
+        for (let client of this.clients.values()) {
+            // If client has not responded for over 30 seconds, disconnect them
+            if (client.waitingForKeepAlive && client.lastKeepAliveReceived.getTime() < Date.now() - 1000 * 30) {
+                client.disconnect('Keepalive timeout')
+                continue
+            }
+
+            // Send keepalive packets every 10 seconds
+            if (!client.waitingForKeepAlive && client.lastKeepAliveReceived.getTime() < Date.now() - 1000 * 10) {
+                const id = Math.floor(Math.random() * 0xffff)
+
+                client.lastKeepAliveIdSent = id 
+                client.waitingForKeepAlive = true
+                client.sendPacket(new S2CKeepAlivePacket(id))
+            }
+        }
+
+        // // Overrun tick to test
+        // await new Promise(resolve => setTimeout(resolve, 25))
     }
 
     /**

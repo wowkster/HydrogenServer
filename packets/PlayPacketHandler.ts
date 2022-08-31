@@ -59,18 +59,20 @@ export default class PlayPacketHandler extends PacketHandler {
     private onPlayerMovement(this: Client, packet: C2SPlayerMovementPacket) {}
 
     private onKeepAlive(this: Client, packet: C2SKeepAlivePacket) {
+        // Make sure we are expecting a packet
+        if (!this.waitingForKeepAlive) {
+            this.disconnect('Unexpected keep alive packet received!')
+            return
+        }
+
         // Make sure that the keep alive ID is the same as the last one we sent
         if (this.lastKeepAliveIdSent != packet.keepAliveId) {
-            this.sendPacket(
-                new S2CPlayDisconnectPacket({
-                    text: `KeepAlive ID mismatch: ${packet.keepAliveId} != ${this.lastKeepAliveIdSent}`,
-                })
-            )
-            this.conn.destroy()
+            this.disconnect(`KeepAlive ID mismatch: ${packet.keepAliveId} != ${this.lastKeepAliveIdSent}`)
             return
         }
 
         // Set the last keep alive received time
         this.lastKeepAliveReceived = new Date()
+        this.waitingForKeepAlive = false
     }
 }

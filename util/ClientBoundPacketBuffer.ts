@@ -199,7 +199,7 @@ export default class ClientBoundPacketBuffer {
         }
     }
 
-    [util.inspect.custom](depth: number) {
+    [util.inspect.custom]() {
         return chalk.red(`(0x${this.packetID.toString(16)})`)
     }
 }

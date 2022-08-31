@@ -29,8 +29,8 @@ export default abstract class PacketHandler {
         const [Clazz, packetConsumer] = packetEntry
 
         const packet = new Clazz(packetBuffer)
-        console.log(chalk.cyan('Packet Length:'), packetBuffer.length)
-        console.log(chalk.cyan('Packet ID:'), packetBuffer.packetID)
+        // console.log(chalk.cyan('Packet Length:'), packetBuffer.length)
+        // console.log(chalk.cyan('Packet ID:'), packetBuffer.packetID)
         console.log(chalk.cyan('C2S Packet:'), packet)
 
         packetConsumer.call(client, packet)
