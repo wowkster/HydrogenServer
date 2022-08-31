@@ -7,6 +7,10 @@
     "scripts": {
         "start": "node --loader ts-node/esm --experimental-specifier-resolution=node index.ts",
         "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+        "generate": "node --loader ts-node/esm --experimental-specifier-resolution=node generators/extractJarData.ts",
+        "create-entity-types": "node --loader ts-node/esm --experimental-specifier-resolution=node generators/createEntityTypes.ts",
+        "create-blocks": "node --loader ts-node/esm --experimental-specifier-resolution=node generators/createBlocks.ts",
+        "create-items": "node --loader ts-node/esm --experimental-specifier-resolution=node generators/createItems.ts",
         "prettier": "prettier --write **/*.ts"
     },
     "author": "Wowkster",
@@ -25,6 +29,7 @@
     "dependencies": {
         "@types/node-int64": "^0.4.29",
         "@types/uuid": "^8.3.4",
+        "axios": "^0.27.2",
         "bitset": "^5.1.1",
         "chalk": "^5.0.1",
         "js-char-escape": "^1.0.9",

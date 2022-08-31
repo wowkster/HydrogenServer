@@ -218,6 +218,21 @@ export default class ClientBoundPacketBuffer {
         }
     }
 
+    writeAngle(angle: number) {
+        if (Math.sign(angle) === 1) {
+            while (angle > 360) angle -= 360
+        } else if (Math.sign(angle) === -1) {
+            while (angle < 0) angle += 360
+        }
+
+        angle /= 360
+        angle *= 256
+
+        angle = Math.floor(angle)
+
+        this.writeUnsignedByte(angle)
+    }
+
     [util.inspect.custom]() {
         return chalk.red(`(0x${this.packetID.toString(16)})`)
     }
