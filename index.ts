@@ -1,15 +1,36 @@
+import { performance } from 'node:perf_hooks'
 import net from 'net'
 import chalk from 'chalk'
+
+import './util/MathUtils'
+
 import ServerBoundPacketBuffer from './util/ServerBoundPacketBuffer'
 import Client from './client/client'
 import ServerBoundPacketHandler from './packets/ServerBoundPacketHandler'
-import { UUIDResolvable } from './util/UUID';
+import { UUIDResolvable } from './util/UUID'
 import Player from './client/Player'
+import RollingArray from './util/RollingArray'
+import MathUtils from './util/MathUtils'
 
+interface Tick {
+    start: number
+    end: number
+    delta: number
+}
 export default class MinecraftServer {
+    static readonly VERSION = '1.0-alpha'
+    static readonly PROTO_VERSION = 758
+    static readonly MC_VERSION = '1.18.2'
     static readonly INSTANCE = new MinecraftServer()
 
-    tcpServer: net.Server
+    private static readonly MAX_TPS = 4
+    private static readonly MAX_MSPT = 1000 / MinecraftServer.MAX_TPS
+
+    private readonly TICK_HISTORY = new RollingArray<Tick>(
+        MinecraftServer.MAX_TPS * 60 /* Store at most the last 1 minute of tick history */
+    )
+
+    private readonly tcpServer: net.Server
     clients: Map<string, Client>
     packetHandler: ServerBoundPacketHandler
 
@@ -50,6 +71,9 @@ export default class MinecraftServer {
         this.tcpServer.listen(25566, () => {
             console.log(chalk.greenBright('Server listening on'), this.tcpServer.address())
         })
+
+        // Start the main game loop
+        this.gameLoop()
     }
 
     getPlayer(username: string): Player | null {
@@ -61,6 +85,82 @@ export default class MinecraftServer {
     }
 
     get players(): Player[] {
-        return Array.from(this.clients.values()).filter(c => !!c.player).map(c => c.player!)
+        return Array.from(this.clients.values())
+            .filter(c => !!c.player)
+            .map(c => c.player!)
     }
-} 
+
+    async gameLoop() {
+        const start = performance.now()
+
+        await this.tick()
+
+        const end = performance.now()
+
+        const tickTime = end - start
+
+        this.TICK_HISTORY.insert({
+            start,
+            end,
+            delta: tickTime,
+        })
+
+        if (tickTime > MinecraftServer.MAX_MSPT) {
+            const msOverMaxMSPT = tickTime - MinecraftServer.MAX_MSPT
+
+            console.warn(chalk.yellow(`Tick took ${tickTime.toFixed(2)}ms (${msOverMaxMSPT.toFixed(2)}ms over limit)`))
+        } else {
+            console.log(
+                chalk.gray(
+                    `Tick took ${tickTime.toFixed(2)}ms (MSPT: ${this.mspt.toFixed(2)}ms) (TPS: ${this.tps.toFixed(1)})`
+                )
+            )
+        }
+
+        process.nextTick(() => {
+            const timeUntilNextTick = MinecraftServer.MAX_MSPT - (performance.now() - start)
+
+            // if (timeUntilNextTick > 0) {
+            //     // Sleep until next tick
+            //     await new Promise(resolve => setTimeout(resolve, timeUntilNextTick))
+            // }
+
+            setTimeout(() => this.gameLoop(), timeUntilNextTick)
+        })
+    }
+
+    async tick() {
+        // Do game stuff
+        // Overrun tick to test
+        await new Promise(resolve => setTimeout(resolve, 25))
+    }
+
+    /**
+     * Returns the average tick time in milliseconds over the last minute
+     */
+    get mspt() {
+        const now = performance.now()
+
+        // Filter out any ticks that are more than a minute old
+        const lastMinute = this.TICK_HISTORY.filter(tick => tick.start > now - 1000 * 60)
+
+        // Calculate the average tick time over the last minute
+        return lastMinute.reduce((acc, tick) => acc + tick.delta, 0) / lastMinute.length
+    }
+
+    /**
+     * Returns the average ticks per second over the last minute
+     */
+    get tps() {
+        const now = performance.now()
+
+        // Filter out any ticks that are more than a minute old
+        const lastMinute = this.TICK_HISTORY.filter(tick => tick.start > now - 1000 * 60)
+
+        const oldestTick = lastMinute[lastMinute.length - 1]
+        const secondsSinceOldestTick = (now - oldestTick.start) / 1000
+
+        // Calculate the number of ticks per second over the last minute
+        return MathUtils.clamp(lastMinute.length / secondsSinceOldestTick, 0, MinecraftServer.MAX_TPS)
+    }
+}

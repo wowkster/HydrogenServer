@@ -1,3 +1,6 @@
+import fs from 'fs'
+
+import MinecraftServer from '..'
 import Client from '../client/client'
 import PacketHandler from './PacketHandler'
 import C2SPingPacket from './status/C2SPingPacket'
@@ -19,8 +22,8 @@ export default class StatusPacketHandler extends PacketHandler {
         this.sendPacket(
             new S2CResponsePacket({
                 version: {
-                    name: '1.18.2',
-                    protocol: 758,
+                    name: MinecraftServer.MC_VERSION,
+                    protocol: MinecraftServer.PROTO_VERSION,
                 },
                 players: {
                     max: 69,
@@ -28,8 +31,9 @@ export default class StatusPacketHandler extends PacketHandler {
                     sample: [],
                 },
                 description: {
-                    text: '§cHydrogen (1.0-Alpha)',
+                    text: `§cHydrogen Server (${MinecraftServer.VERSION})`,
                 },
+                favicon: `data:image/png;base64,${fs.readFileSync('./server-icon.png').toString('base64')}`,
             })
         )
     }
