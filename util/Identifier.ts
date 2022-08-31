@@ -50,6 +50,6 @@ export default class Identifier {
     equals(other: string | Identifier) {
         const otherID = typeof other === 'string' ? new Identifier(other) : other
 
-        return otherID.namespace === this.namespace &&  otherID.value === this.value 
+        return otherID.namespace === this.namespace && otherID.value === this.value
     }
 }

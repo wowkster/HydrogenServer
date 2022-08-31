@@ -1,5 +1,5 @@
 import ServerBoundPacketBuffer from './ServerBoundPacketBuffer'
-import Vector from './Vector';
+import Vector from './Vector'
 
 describe('ServerBoundPacketBuffer reads correctly', () => {
     test('Reads VarInt (0) correctly', () => {

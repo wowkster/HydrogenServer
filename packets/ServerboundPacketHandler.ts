@@ -4,8 +4,8 @@ import StatusPacketHandler from './StatusPacketHandler'
 import LoginPacketHandler from './LoginPacketHandler'
 import HandshakePacketHandler from './HandshakePacketHandler'
 import PlayPacketHandler from './PlayPacketHandler'
-import { UnknownPacketError } from './PacketHandler';
-import chalk from 'chalk';
+import { UnknownPacketError } from './PacketHandler'
+import chalk from 'chalk'
 export default class ServerBoundPacketHandler {
     handshakePacketHandler: HandshakePacketHandler
     statusPacketHandler: StatusPacketHandler
@@ -38,7 +38,11 @@ export default class ServerBoundPacketHandler {
                 } catch (err) {
                     if (!(err instanceof UnknownPacketError)) throw err
 
-                    console.log(chalk.yellow('Caught Unknown Packet'), chalk.gray(`(0x${err.packetBuffer.packetID.toString(16)}):`), err.packetBuffer)
+                    console.log(
+                        chalk.yellow('Caught Unknown Packet'),
+                        chalk.gray(`(0x${err.packetBuffer.packetID.toString(16)}):`),
+                        err.packetBuffer
+                    )
                 }
                 break
         }

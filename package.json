@@ -6,7 +6,8 @@
     "type": "module",
     "scripts": {
         "start": "node --loader ts-node/esm --experimental-specifier-resolution=node index.ts",
-        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+        "prettier": "prettier --write **/*.ts"
     },
     "author": "Wowkster",
     "license": "MIT",

@@ -12,5 +12,3 @@ export enum Difficulty {
     NORMAL = 2,
     HARD = 3,
 }
-
-

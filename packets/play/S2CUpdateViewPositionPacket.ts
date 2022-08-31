@@ -7,7 +7,7 @@ import S2CPacket from '../S2CPacket'
 export default class S2CUpdateViewPositionPacket extends S2CPacket {
     constructor(readonly chunkX: number, readonly chunkZ: number) {
         super(0x49)
-        
+
         this.writeVarInt(chunkX)
         this.writeVarInt(chunkZ)
     }

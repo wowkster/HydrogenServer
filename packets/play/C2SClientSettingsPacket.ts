@@ -1,8 +1,8 @@
 import { ClientChatMode, ClientSettings } from './../../client/play/ClientSettings'
 import C2SPacket from '../C2SPacket'
 import ServerBoundPacketBuffer from '../../util/ServerBoundPacketBuffer'
-import DisplayedSkinParts from '../../client/play/DisplayedSkinParts';
-import { MainHand } from '../../client/play/ClientSettings';
+import DisplayedSkinParts from '../../client/play/DisplayedSkinParts'
+import { MainHand } from '../../client/play/ClientSettings'
 
 /**
  * https://wiki.vg/Protocol#Client_Settings
@@ -22,6 +22,14 @@ export default class C2SClientSettingsPacket extends C2SPacket {
         const textFiltering = packetBuffer.readBoolean() // Not used
         const allowServerListings = packetBuffer.readBoolean()
 
-        this.clientSettings = new ClientSettings(locale, viewDistance, chatMode, chatColors, displayedSkinParts, mainHand, allowServerListings)
+        this.clientSettings = new ClientSettings(
+            locale,
+            viewDistance,
+            chatMode,
+            chatColors,
+            displayedSkinParts,
+            mainHand,
+            allowServerListings
+        )
     }
 }

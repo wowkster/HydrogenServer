@@ -1,4 +1,4 @@
-import BitSet from "./BitSet"
+import BitSet from './BitSet'
 
 /**
  * These tests come from the official documentation:
@@ -7,17 +7,17 @@ import BitSet from "./BitSet"
  */
 
 describe('BitSet', () => {
-    it ('toLongArray ()', () => {
+    it('toLongArray ()', () => {
         const bitset = new BitSet('0')
-        
+
         const longs = bitset.toLongArray()
 
         expect(longs.length).toBe(0)
-    })   
+    })
 
-    it ('toLongArray (11110000)', () => {
+    it('toLongArray (11110000)', () => {
         const bitset = new BitSet('11110000')
-        
+
         const longs = bitset.toLongArray()
 
         expect((longs[Math.floor(0 / 64)] & (1n << BigInt(0 % 64))) != 0n).toBe(false)
@@ -28,11 +28,11 @@ describe('BitSet', () => {
         expect((longs[Math.floor(5 / 64)] & (1n << BigInt(5 % 64))) != 0n).toBe(true)
         expect((longs[Math.floor(6 / 64)] & (1n << BigInt(6 % 64))) != 0n).toBe(true)
         expect((longs[Math.floor(7 / 64)] & (1n << BigInt(7 % 64))) != 0n).toBe(true)
-    })   
-    
-    it ('toLongArray (11110000, 00000000 00000000 00000000 00000000 00000000 00000000 00000000 11110000)', () => {
+    })
+
+    it('toLongArray (11110000, 00000000 00000000 00000000 00000000 00000000 00000000 00000000 11110000)', () => {
         const bitset = new BitSet('11110000' + '0000000000000000000000000000000000000000000000000000000011110000')
-        
+
         const longs = bitset.toLongArray()
 
         expect((longs[Math.floor(0 / 64)] & (1n << BigInt(0 % 64))) != 0n).toBe(false)
@@ -52,5 +52,5 @@ describe('BitSet', () => {
         expect((longs[Math.floor((64 + 5) / 64)] & (1n << BigInt((64 + 5) % 64))) != 0n).toBe(true)
         expect((longs[Math.floor((64 + 6) / 64)] & (1n << BigInt((64 + 6) % 64))) != 0n).toBe(true)
         expect((longs[Math.floor((64 + 7) / 64)] & (1n << BigInt((64 + 7) % 64))) != 0n).toBe(true)
-    })   
+    })
 })

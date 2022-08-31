@@ -137,7 +137,7 @@ export default class MinecraftServer {
             if (!client.waitingForKeepAlive && client.lastKeepAliveReceived.getTime() < Date.now() - 1000 * 10) {
                 const id = Math.floor(Math.random() * 0xffff)
 
-                client.lastKeepAliveIdSent = id 
+                client.lastKeepAliveIdSent = id
                 client.waitingForKeepAlive = true
                 client.sendPacket(new S2CKeepAlivePacket(id))
             }

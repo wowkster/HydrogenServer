@@ -176,7 +176,7 @@ class ServerBoundPacketBuffer {
 
         const x = val.shiftRight(38)
         const y = val.shiftLeft(52).shiftRight(52)
-        const z = val.shiftRight(12).and(0x3FFFFFF)
+        const z = val.shiftRight(12).and(0x3ffffff)
 
         return new Vector(x.toInt(), y.toInt(), z.toInt())
     }

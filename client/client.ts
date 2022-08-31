@@ -1,10 +1,7 @@
 import { Socket } from 'net'
 import S2CPacket from '../packets/S2CPacket'
-import { UUIDResolvable } from '../util/UUID'
-import PlayerAbilities from './play/PlayerAbilities'
 import { ClientSettings } from './play/ClientSettings'
 import chalk from 'chalk'
-import PlayerInfo from './play/PlayerInfo'
 import Player from './Player'
 import S2CPlayDisconnectPacket from '../packets/play/S2CPlayDisconnectPacket'
 

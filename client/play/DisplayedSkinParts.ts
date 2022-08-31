@@ -28,7 +28,7 @@ export default class DisplayedSkinParts {
             this.hat = !!((flags >> 6) & 1)
             return
         }
-        
+
         this.cape = flags?.includes(DisplayedSkinPartsFlags.CAPE) ?? false
         this.jacket = flags?.includes(DisplayedSkinPartsFlags.JACKET) ?? false
         this.leftSleeve = flags?.includes(DisplayedSkinPartsFlags.LEFT_SLEEVE) ?? false

@@ -1,13 +1,10 @@
 import Client from '../client/client'
 import PacketHandler from './PacketHandler'
-import C2SHandshakePacket from './handshake/C2SHandshakePacket';
+import C2SHandshakePacket from './handshake/C2SHandshakePacket'
 
 export default class HandshakePacketHandler extends PacketHandler {
-
     init() {
-        this.packetMap = new Map([
-            [0x00, [C2SHandshakePacket, this.onHandshake]],
-        ])
+        this.packetMap = new Map([[0x00, [C2SHandshakePacket, this.onHandshake]]])
     }
 
     private onHandshake(this: Client, packet: C2SHandshakePacket) {

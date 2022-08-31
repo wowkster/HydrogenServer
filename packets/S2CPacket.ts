@@ -1,10 +1,10 @@
 import ClientBoundPacketBuffer from '../util/ClientBoundPacketBuffer'
-import { UUIDResolvable } from '../util/UUID';
-import { ChatComponent } from '../util/Chat';
-import Identifier from '../util/Identifier';
-import nbt from 'prismarine-nbt';
-import Vector from '../util/Vector';
-import Position from '../util/Position';
+import { UUIDResolvable } from '../util/UUID'
+import { ChatComponent } from '../util/Chat'
+import Identifier from '../util/Identifier'
+import nbt from 'prismarine-nbt'
+import Vector from '../util/Vector'
+import Position from '../util/Position'
 
 export default abstract class S2CPacket {
     packetBuffer: ClientBoundPacketBuffer
