@@ -1,12 +1,13 @@
-import { UUIDResolvable } from '../util/UUID'
-import PlayerInfo from './play/PlayerInfo'
-import PlayerAbilities, { PlayerAbilityFlags } from './play/PlayerAbilities'
-import Vector from '../util/Vector'
-import { GameMode } from '../util/PlayEnums'
-import S2CPlayerInfoPacket from '../packets/play/S2CPlayerInfoPacket'
-import { PlayerInfoAction } from '../packets/play/S2CPlayerInfoPacket'
-import { ChatComponent } from '../util/Chat'
-import Client from './client'
+import { ChatComponent } from '../datatypes/Chat'
+import { GameMode } from '../datatypes/PlayEnums'
+import PlayerAbilities, { PlayerAbilityFlags } from '../datatypes/player/PlayerAbilities'
+import PlayerInfo from '../datatypes/player/PlayerInfo'
+import { UUIDResolvable } from '../datatypes/UUID'
+import Vector from '../datatypes/Vector'
+
+import Client from './Client'
+
+import S2CPlayerInfoPacket, { PlayerInfoAction } from '../network/packets/play/S2CPlayerInfoPacket'
 
 export default class Player {
     readonly client: Client

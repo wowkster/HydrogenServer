@@ -4,14 +4,14 @@ import chalk from 'chalk'
 
 import './util/MathUtils'
 
-import ServerBoundPacketBuffer from './util/ServerBoundPacketBuffer'
-import Client from './client/client'
-import ServerBoundPacketHandler from './packets/ServerBoundPacketHandler'
-import { UUIDResolvable } from './util/UUID'
+import ServerBoundPacketBuffer from './network/ServerBoundPacketBuffer'
+import Client from './client/Client'
+import ServerBoundPacketManager from './network/ServerBoundPacketManager'
+import { UUIDResolvable } from './datatypes/UUID'
 import Player from './client/Player'
 import RollingArray from './util/RollingArray'
 import MathUtils from './util/MathUtils'
-import S2CKeepAlivePacket from './packets/play/S2CKeepAlivePacket'
+import S2CKeepAlivePacket from './network/packets/play/S2CKeepAlivePacket'
 
 interface Tick {
     start: number
@@ -33,12 +33,12 @@ export default class MinecraftServer {
 
     private readonly tcpServer: net.Server
     clients: Map<string, Client>
-    packetHandler: ServerBoundPacketHandler
+    packetHandler: ServerBoundPacketManager
 
     constructor() {
         this.tcpServer = net.createServer()
         this.clients = new Map()
-        this.packetHandler = new ServerBoundPacketHandler()
+        this.packetHandler = new ServerBoundPacketManager()
         this.init()
     }
 

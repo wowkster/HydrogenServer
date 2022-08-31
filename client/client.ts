@@ -1,9 +1,9 @@
 import { Socket } from 'net'
-import S2CPacket from '../packets/S2CPacket'
-import { ClientSettings } from './play/ClientSettings'
+import S2CPacket from '../network/packets/S2CPacket'
+import { ClientSettings } from '../datatypes/client/ClientSettings'
 import chalk from 'chalk'
 import Player from './Player'
-import S2CPlayDisconnectPacket from '../packets/play/S2CPlayDisconnectPacket'
+import S2CPlayDisconnectPacket from '../network/packets/play/S2CPlayDisconnectPacket'
 
 export enum ConnectionState {
     HANDSHAKE = 0,
@@ -13,25 +13,34 @@ export enum ConnectionState {
 }
 
 export default class Client {
+    // Raw TCP Socket
     conn: Socket
 
+    // Connection
     state: ConnectionState
     protoVersion?: number
     serverAddress?: string
     serverPort?: number
 
+    // Client Data
     brand?: string
     settings?: ClientSettings
 
+    // Player
     player?: Player
 
-    waitingForKeepAlive: boolean = false
-    lastKeepAliveIdSent: number = 0
-    lastKeepAliveReceived: Date = new Date()
+    // Keep Alive
+    waitingForKeepAlive: boolean
+    lastKeepAliveIdSent: number
+    lastKeepAliveReceived: Date
 
     constructor(conn: Socket) {
         this.conn = conn
         this.state = ConnectionState.HANDSHAKE
+
+        this.waitingForKeepAlive = false
+        this.lastKeepAliveIdSent = 0
+        this.lastKeepAliveReceived = new Date()
     }
 
     sendPacket(packet: S2CPacket) {

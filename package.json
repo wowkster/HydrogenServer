@@ -34,7 +34,8 @@
         "nbt": "^0.8.1",
         "node-int64": "^0.4.0",
         "prismarine-nbt": "^2.2.1",
-        "uuid": "^8.3.2"
+        "uuid": "^8.3.2",
+        "zlib": "^1.0.5"
     },
     "jest": {
         "preset": "ts-jest",
@@ -56,6 +57,6 @@
         "verbose": true,
         "moduleNameMapper": {
             "#(.*)": "<rootDir>/node_modules/$1"
-          }
+        }
     }
 }
