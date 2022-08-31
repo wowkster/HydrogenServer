@@ -21,12 +21,13 @@ import S2CUnlockRecipesPacket from './play/S2CUnlockRecipesPacket'
 import S2CPlayerPositionAndLookPacket from './play/S2CPlayerPositionAndLookPacket'
 import Player from '../client/Player'
 import Position from '../util/Position'
-import S2CPlayerInfoPacket from './play/S2CPlayerInfoPacket';
-import { PlayerInfoAction } from './play/S2CPlayerInfoPacket';
-import S2CUpdateViewPositionPacket from './play/S2CUpdateViewPositionPacket';
-import S2CInitializeWorldBorderPacket from './play/S2CInitializeWorldBorderPacket';
-import S2CSpawnPositionPacket from './play/S2CSpawnPositionPacket';
+import S2CPlayerInfoPacket from './play/S2CPlayerInfoPacket'
+import { PlayerInfoAction } from './play/S2CPlayerInfoPacket'
+import S2CUpdateViewPositionPacket from './play/S2CUpdateViewPositionPacket'
+import S2CInitializeWorldBorderPacket from './play/S2CInitializeWorldBorderPacket'
+import S2CSpawnPositionPacket from './play/S2CSpawnPositionPacket'
 import Vector from '../util/Vector'
+import S2CChunkDataAndUpdateLightPacket from './play/S2CChunkDataAndUpdateLightPacket'
 
 export default class LoginPacketHandler extends PacketHandler {
     init() {
@@ -75,7 +76,20 @@ export default class LoginPacketHandler extends PacketHandler {
 
         this.sendPacket(new S2CUpdateViewPositionPacket(this.player.chunkX, this.player.chunkZ))
 
-        // TODO Chunk Data & Update Light
+        // TODO Update Light
+
+        for (let x = -4; x < 4; x++) {
+            for (let z = -4; z < 4; z++) {
+                this.sendPacket(
+                    new S2CChunkDataAndUpdateLightPacket(
+                        x,
+                        z,
+                        S2CChunkDataAndUpdateLightPacket.EMPTY_CHUNK_DATA,
+                        S2CChunkDataAndUpdateLightPacket.EMPTY_LIGHT_DATA
+                    )
+                )
+            }
+        }
 
         this.sendPacket(new S2CInitializeWorldBorderPacket())
 
@@ -83,7 +97,7 @@ export default class LoginPacketHandler extends PacketHandler {
 
         this.sendPacket(new S2CUpdateViewPositionPacket(this.player.chunkX, this.player.chunkZ))
 
-        this.sendPacket(S2CPlayerPositionAndLookPacket.fromPosition(new Position()))
+        this.sendPacket(S2CPlayerPositionAndLookPacket.fromPosition(Position.ORIGIN))
     }
 
     private onEncryptionResponse(this: Client, packet: C2SEncryptionResponsePacket) {

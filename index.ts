@@ -110,20 +110,15 @@ export default class MinecraftServer {
 
             console.warn(chalk.yellow(`Tick took ${tickTime.toFixed(2)}ms (${msOverMaxMSPT.toFixed(2)}ms over limit)`))
         } else {
-            console.log(
-                chalk.gray(
-                    `Tick took ${tickTime.toFixed(2)}ms (MSPT: ${this.mspt.toFixed(2)}ms) (TPS: ${this.tps.toFixed(1)})`
-                )
-            )
+            // console.log(
+            //     chalk.gray(
+            //         `Tick took ${tickTime.toFixed(2)}ms (MSPT: ${this.mspt.toFixed(2)}ms) (TPS: ${this.tps.toFixed(1)})`
+            //     )
+            // )
         }
 
         process.nextTick(() => {
             const timeUntilNextTick = MinecraftServer.MAX_MSPT - (performance.now() - start)
-
-            // if (timeUntilNextTick > 0) {
-            //     // Sleep until next tick
-            //     await new Promise(resolve => setTimeout(resolve, timeUntilNextTick))
-            // }
 
             setTimeout(() => this.gameLoop(), timeUntilNextTick)
         })
@@ -160,7 +155,7 @@ export default class MinecraftServer {
         const oldestTick = lastMinute[lastMinute.length - 1]
         const secondsSinceOldestTick = (now - oldestTick.start) / 1000
 
-        // Calculate the number of ticks per second over the last minute
+        // Calculate the number of ticks per second since the oldest tick (< 1m old) in the history
         return MathUtils.clamp(lastMinute.length / secondsSinceOldestTick, 0, MinecraftServer.MAX_TPS)
     }
 }

@@ -24,6 +24,7 @@
     "dependencies": {
         "@types/node-int64": "^0.4.29",
         "@types/uuid": "^8.3.4",
+        "bitset": "^5.1.1",
         "chalk": "^5.0.1",
         "js-char-escape": "^1.0.9",
         "js-string-escape": "^1.0.1",
@@ -51,6 +52,9 @@
         "testMatch": [
             "**/*.spec.ts"
         ],
-        "verbose": true
+        "verbose": true,
+        "moduleNameMapper": {
+            "#(.*)": "<rootDir>/node_modules/$1"
+          }
     }
 }

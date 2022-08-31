@@ -1,6 +1,10 @@
 import Vector from './Vector'
 
 export default class Position {
+    static get ORIGIN() {
+        return new Position()
+    }
+
     constructor(public pos: Vector = new Vector(), public yaw: number = 0, public pitch: number = 0) {}
 
     get x() {

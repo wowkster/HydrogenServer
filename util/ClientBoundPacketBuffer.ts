@@ -1,11 +1,14 @@
+import util from 'util'
+import nbt from 'prismarine-nbt'
 import Long from 'long'
-import { parse } from 'uuid'
+
 import { ChatComponent } from './Chat'
 import Identifier from './Identifier'
-import nbt from 'prismarine-nbt'
 import UUID, { UUIDResolvable } from './UUID'
-import Position from './Position';
+import Position from './Position'
 import Vector from './Vector'
+import chalk from 'chalk'
+import BitSet from './BitSet'
 
 export default class ClientBoundPacketBuffer {
     private static SEGMENT_BITS = 0x7f
@@ -158,8 +161,9 @@ export default class ClientBoundPacketBuffer {
         this.writeString(identifier.toString())
     }
 
-    writeNBT(nbtTag: nbt.NBT) {
-        const buff = nbt.writeUncompressed(nbtTag)
+    writeNBT(nbtTag: nbt.NBT | nbt.Tags['compound']) {
+        const buff = Buffer.alloc(nbt.proto.sizeOf(nbtTag, 'nbt'))
+        nbt.proto.write(nbtTag, buff, 0, 'nbt')
         this.buffers.push(buff)
     }
 
@@ -168,13 +172,13 @@ export default class ClientBoundPacketBuffer {
     }
 
     writePosition(pos: Vector | Position) {
-        const {x, y, z} = pos
+        const { x, y, z } = pos
 
         // ((x & 0x3FFFFFF) << 38) | ((z & 0x3FFFFFF) << 12) | (y & 0xFFF)
 
-        let xl = new Long(x & 0x3FFFFFF).shiftLeft(38)
-        let zl = new Long(z & 0x3FFFFFF).shiftLeft(12)
-        let yl = new Long(y & 0xFFF)
+        let xl = new Long(x & 0x3ffffff).shiftLeft(38)
+        let zl = new Long(z & 0x3ffffff).shiftLeft(12)
+        let yl = new Long(y & 0xfff)
 
         let value = xl.or(zl).or(yl)
 
@@ -184,5 +188,18 @@ export default class ClientBoundPacketBuffer {
         buff.writeUInt32BE(value.getHighBitsUnsigned())
 
         this.buffers.push(buff)
+    }
+
+    writeBitSet(bits: BitSet) {
+        const longs = bits.toLongArray()
+
+        this.writeVarInt(longs.length)
+        for (const long of longs) {
+            this.writeLong(long)
+        }
+    }
+
+    [util.inspect.custom](depth: number) {
+        return chalk.red(`(0x${this.packetID.toString(16)})`)
     }
 }

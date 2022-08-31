@@ -1,6 +1,7 @@
 import ServerBoundPacketBuffer from './ServerBoundPacketBuffer'
 import ClientBoundPacketBuffer from './ClientBoundPacketBuffer'
 import Vector from './Vector'
+import BitSet from './BitSet'
 
 describe('ClientBoundPacketBuffer writes correctly', () => {
     it('Writes VarInt (0) Correctly', () => {
@@ -151,5 +152,35 @@ describe('ClientBoundPacketBuffer writes correctly', () => {
         let buff = new ClientBoundPacketBuffer()
         buff.writePosition(new Vector(3, -5, 0))
         expect(new ServerBoundPacketBuffer(buff.serialize()).readPosition()).toEqual(new Vector(3, -5, 0))
+    })
+
+    it('Writes BitSet (00000000) Correctly', () => {
+        let buff = new ClientBoundPacketBuffer()
+        buff.writeBitSet(new BitSet('00000000'))
+
+        const serialized = buff.serialize(true)
+
+        expect(serialized.length).toBe(1)
+        expect(serialized.toString('hex')).toEqual('00')
+    })
+
+    it('Writes BitSet (11110000) Correctly', () => {
+        let buff = new ClientBoundPacketBuffer()
+        buff.writeBitSet(new BitSet('11110000'))
+
+        const serialized = buff.serialize(true)
+
+        expect(serialized.length).toBe(9)
+        expect(serialized.toString('hex')).toEqual('01' + '00000000000000f0')
+    })
+
+    it('Writes BitSet (11110000, 00000000 00000000 00000000 00000000 00000000 00000000 00000000 11110000) Correctly', () => {
+        let buff = new ClientBoundPacketBuffer()
+        buff.writeBitSet(new BitSet('11110000' + '0000000000000000000000000000000000000000000000000000000011110000'))
+
+        const serialized = buff.serialize(true)
+
+        expect(serialized.length).toBe(17)
+        expect(serialized.toString('hex')).toEqual('02' + '00000000000000f0' + '00000000000000f0')
     })
 })
