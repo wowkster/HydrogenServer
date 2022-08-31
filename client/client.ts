@@ -27,6 +27,9 @@ export default class Client {
 
     player?: Player
 
+    lastKeepAliveIdSent: number = 0
+    lastKeepAliveReceived?: Date
+
     constructor(conn: Socket) {
         this.conn = conn
         this.state = ConnectionState.HANDSHAKE
