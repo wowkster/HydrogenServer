@@ -2,7 +2,7 @@ import { Socket } from 'net'
 import S2CPacket from '../network/packets/S2CPacket'
 import { ClientSettings } from '../datatypes/client/ClientSettings'
 import chalk from 'chalk'
-import Player from './Player'
+import Player from '../entity/player/Player'
 import S2CPlayDisconnectPacket from '../network/packets/play/S2CPlayDisconnectPacket'
 
 export enum ConnectionState {
@@ -59,4 +59,5 @@ export default class Client {
         )
         this.conn.destroy()
     }
+
 }

@@ -1,6 +1,7 @@
 import UUID from '../../../datatypes/UUID'
-import { EntityTypes } from '../../../registry/EntityTypes'
+import { EntityType } from '../../../entity/EntityType'
 import S2CPacket from '../S2CPacket'
+import Entity from '../../../entity/Entity'
 
 enum ItemFrameOrientation {
     DOWN = 0,
@@ -21,7 +22,7 @@ export default class S2CSpawnEntityPacket extends S2CPacket {
     constructor(
         readonly entityId: number,
         readonly uuid: UUID,
-        readonly type: EntityTypes,
+        readonly type: EntityType,
         readonly x: number,
         readonly y: number,
         readonly z: number,
@@ -35,13 +36,13 @@ export default class S2CSpawnEntityPacket extends S2CPacket {
         super(0x00)
 
         switch (type) {
-            case EntityTypes.PLAYER:
+            case EntityType.PLAYER:
                 throw new Error('Players should only be spawned with the S2CSpawnPlayer packet!')
-            case EntityTypes.EXPERIENCE_ORB:
+            case EntityType.EXPERIENCE_ORB:
                 throw new Error('Experience orbs should only be spawned with the S2CSpawnExperienceOrb packet!')
-            case EntityTypes.PAINTING:
+            case EntityType.PAINTING:
                 throw new Error('Paintings should only be spawned with the S2CSpawnPainting packet!')
-            case EntityTypes.MARKER:
+            case EntityType.MARKER:
                 throw new Error(
                     'Marker entities should never be spawned! (See https://minecraft.fandom.com/wiki/Marker)'
                 )
@@ -59,5 +60,26 @@ export default class S2CSpawnEntityPacket extends S2CPacket {
         this.packetBuffer.writeShort(vx)
         this.packetBuffer.writeShort(vy)
         this.packetBuffer.writeShort(vz)
+    }
+
+    static fromEntity(entity: Entity) {
+        const data = 1
+        
+        // TODO assign data based on entity type
+        
+        return new S2CSpawnEntityPacket(
+            entity.id,
+            entity.uuid,
+            entity.type,
+            entity.x,
+            entity.y,
+            entity.z,
+            entity.pitch,
+            entity.yaw,
+            data,
+            entity.velocity.x,
+            entity.velocity.y,
+            entity.velocity.z
+        )
     }
 }

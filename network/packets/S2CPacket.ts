@@ -1,10 +1,10 @@
 import nbt from 'prismarine-nbt'
 
+import BitSet from '../../datatypes/BitSet'
+import BlockPos from '../../datatypes/BlockPos'
 import { ChatComponent } from '../../datatypes/Chat'
 import Identifier from '../../datatypes/Identifier'
-import Position from '../../datatypes/Position'
 import { UUIDResolvable } from '../../datatypes/UUID'
-import Vector from '../../datatypes/Vector'
 import ClientBoundPacketBuffer from '../ClientBoundPacketBuffer'
 
 export default abstract class S2CPacket {
@@ -90,7 +90,15 @@ export default abstract class S2CPacket {
         this.packetBuffer.writeBuffer(value)
     }
 
-    protected writePosition(value: Vector | Position) {
-        this.packetBuffer.writePosition(value)
+    protected writeBlockPos(value: BlockPos) {
+        this.packetBuffer.writeBlockPos(value)
+    }
+
+    protected writeBitSet(value: BitSet) {
+        this.packetBuffer.writeBitSet(value)
+    }
+
+    protected writeAngle(value: number) {
+        this.packetBuffer.writeAngle(value)
     }
 }

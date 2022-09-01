@@ -1,6 +1,6 @@
+import { ChatComponent } from '../../datatypes/Chat'
+import { GameMode } from '../../datatypes/PlayEnums'
 import UUID, { UUIDResolvable } from '../../datatypes/UUID'
-import { ChatComponent } from '../Chat'
-import { GameMode } from '../PlayEnums'
 
 export interface Property {
     name: string

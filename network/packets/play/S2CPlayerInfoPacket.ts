@@ -1,4 +1,4 @@
-import PlayerInfo from '../../../datatypes/player/PlayerInfo'
+import PlayerInfo from '../../../entity/player/PlayerInfo'
 import S2CPacket from '../S2CPacket'
 
 export enum PlayerInfoAction {

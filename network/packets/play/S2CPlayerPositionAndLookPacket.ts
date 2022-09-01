@@ -1,6 +1,7 @@
 import Position from '../../../datatypes/Position'
 import Vector from '../../../datatypes/Vector'
 import S2CPacket from '../S2CPacket'
+import EntityPosition from '../../../datatypes/EntityPosition';
 
 export default class S2CPlayerPositionAndLookPacket extends S2CPacket {
     static RELATIVE_BIT_MASK = 0x01 | 0x02 | 0x04 | 0x08 | 0x10
@@ -31,7 +32,7 @@ export default class S2CPlayerPositionAndLookPacket extends S2CPacket {
         this.packetBuffer.writeBoolean(dismountVehicle)
     }
 
-    static fromPosition(pos: Position, dismountVehicle: boolean = false, relative: boolean = false) {
+    static fromPosition(pos: EntityPosition, dismountVehicle: boolean = false, relative: boolean = false) {
         return new S2CPlayerPositionAndLookPacket(pos.x, pos.y, pos.z, pos.yaw, pos.pitch, dismountVehicle, relative)
     }
 

@@ -1,4 +1,4 @@
-import PlayerAbilities from '../../../datatypes/player/PlayerAbilities'
+import PlayerAbilities from '../../../entity/player/PlayerAbilities'
 import S2CPacket from '../S2CPacket'
 
 export default class S2CPlayerAbilitiesPacket extends S2CPacket {

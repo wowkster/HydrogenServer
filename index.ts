@@ -2,16 +2,20 @@ import { performance } from 'node:perf_hooks'
 import net from 'net'
 import chalk from 'chalk'
 
+import './entity/Entity'
+
 import './util/MathUtils'
 
 import ServerBoundPacketBuffer from './network/ServerBoundPacketBuffer'
 import Client from './client/Client'
 import ServerBoundPacketManager from './network/ServerBoundPacketManager'
 import { UUIDResolvable } from './datatypes/UUID'
-import Player from './client/Player'
+import Player from './entity/player/Player'
 import RollingArray from './util/RollingArray'
 import MathUtils from './util/MathUtils'
 import S2CKeepAlivePacket from './network/packets/play/S2CKeepAlivePacket'
+import World from './world/World'
+import S2CPacket from './network/packets/S2CPacket';
 
 interface Tick {
     start: number
@@ -24,6 +28,7 @@ export default class MinecraftServer {
     static readonly MC_VERSION = '1.18.2'
     static readonly INSTANCE = new MinecraftServer()
     
+    static readonly ONLINE_MODE = false
     static readonly PACKET_COMPRESSION_THRESHOLD = 1_000
 
     private static readonly MAX_TPS = 4
@@ -41,6 +46,7 @@ export default class MinecraftServer {
         this.tcpServer = net.createServer()
         this.clients = new Map()
         this.packetHandler = new ServerBoundPacketManager()
+
         this.init()
     }
 
@@ -64,6 +70,7 @@ export default class MinecraftServer {
             conn.once('close', () => {
                 console.log(chalk.yellow(`Connection from ${remoteAddress} closed`))
                 this.clients.delete(remoteAddress)
+                client.player?.onDisconnect()
             })
             conn.on('error', err => {
                 console.log(chalk.redBright(`Connection ${remoteAddress} error:`), err.message)
@@ -91,6 +98,12 @@ export default class MinecraftServer {
         return Array.from(this.clients.values())
             .filter(c => !!c.player)
             .map(c => c.player!)
+    }
+
+    emitPacketToAllPlayers(packet: S2CPacket) {
+        for (const player of this.players) {
+            player.client.sendPacket(packet)
+        }
     }
 
     async gameLoop() {
@@ -145,8 +158,9 @@ export default class MinecraftServer {
             }
         }
 
-        // // Overrun tick to test
-        // await new Promise(resolve => setTimeout(resolve, 25))
+        World.OVERWORLD.tick()
+
+        // TODO regularly update ping for players
     }
 
     /**

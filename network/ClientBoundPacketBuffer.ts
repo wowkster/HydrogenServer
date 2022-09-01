@@ -6,11 +6,10 @@ import zlib from 'zlib'
 import MinecraftServer from '..'
 
 import BitSet from '../datatypes/BitSet'
+import BlockPos from '../datatypes/BlockPos'
 import { ChatComponent } from '../datatypes/Chat'
 import Identifier from '../datatypes/Identifier'
-import Position from '../datatypes/Position'
 import UUID, { UUIDResolvable } from '../datatypes/UUID'
-import Vector from '../datatypes/Vector'
 
 export default class ClientBoundPacketBuffer {
     private static SEGMENT_BITS = 0x7f
@@ -190,7 +189,7 @@ export default class ClientBoundPacketBuffer {
         this.buffers.push(buff)
     }
 
-    writePosition(pos: Vector | Position) {
+    writeBlockPos(pos: BlockPos) {
         const { x, y, z } = pos
 
         // ((x & 0x3FFFFFF) << 38) | ((z & 0x3FFFFFF) << 12) | (y & 0xFFF)

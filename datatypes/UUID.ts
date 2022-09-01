@@ -4,10 +4,14 @@ export type UUIDResolvable = string | Buffer | Uint8Array | UUID
 
 export default class UUID {
     public static ZERO = new UUID('00000000-0000-0000-0000-000000000000')
-    
-    private readonly value: string
 
-    constructor(uuidLike: UUIDResolvable) {
+    private readonly value!: string
+
+    constructor(uuidLike?: UUIDResolvable) {
+        if (!uuidLike) {
+            return new UUID(uuid.v4())
+        }
+
         if (typeof uuidLike === 'string') {
             if (!uuid.validate(uuidLike)) throw new Error('Invalid UUID!')
             this.value = uuidLike

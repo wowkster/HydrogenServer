@@ -1,14 +1,16 @@
 import Client, { ConnectionState } from '../../client/Client'
-import Player from '../../client/Player'
 import { Difficulty } from '../../datatypes/PlayEnums'
-import Position from '../../datatypes/Position'
-import Vector from '../../datatypes/Vector'
 import UUID from '../../datatypes/UUID'
+import Vector from '../../datatypes/Vector'
+import Player from '../../entity/player/Player'
 
+import MinecraftServer from '../..'
+import World from '../../world/World'
 import C2SEncryptionResponsePacket from '../packets/login/C2SEncryptionResponsePacket'
 import C2SLoginStartPacket from '../packets/login/C2SLoginStartPacket'
 import C2SPluginResponsePacket from '../packets/login/C2SPluginResponsePacket'
 import S2CLoginSuccessPacket from '../packets/login/S2CLoginSuccessPacket'
+import S2CSetCompressionPacket from '../packets/login/S2CSetCompressionPacket'
 import S2CChunkDataAndUpdateLightPacket from '../packets/play/S2CChunkDataAndUpdateLightPacket'
 import S2CDeclareRecipesPacket from '../packets/play/S2CDeclareRecipesPacket'
 import S2CEntityStatusPacket, { EntityStatus } from '../packets/play/S2CEntityStatusPacket'
@@ -25,8 +27,7 @@ import S2CTagsPacket from '../packets/play/S2CTagsPacket'
 import S2CUnlockRecipesPacket, { UnlockRecipesAction } from '../packets/play/S2CUnlockRecipesPacket'
 import S2CUpdateViewPositionPacket from '../packets/play/S2CUpdateViewPositionPacket'
 import AbstractPacketHandler from './AbstractPacketHandler'
-import MinecraftServer from '../..'
-import S2CSetCompressionPacket from '../packets/login/S2CSetCompressionPacket'
+import BlockPos from '../../datatypes/BlockPos';
 
 export default class LoginPacketHandler extends AbstractPacketHandler {
     init() {
@@ -52,7 +53,7 @@ export default class LoginPacketHandler extends AbstractPacketHandler {
         // Switch state to PLAY and send initial game packets
         this.state = ConnectionState.PLAY
 
-        this.sendPacket(new S2CJoinGamePacket(this.player.entityID))
+        this.sendPacket(new S2CJoinGamePacket(this.player.id))
 
         this.sendPacket(S2CPluginMessagePacket.BRAND_PACKET)
 
@@ -66,18 +67,31 @@ export default class LoginPacketHandler extends AbstractPacketHandler {
 
         this.sendPacket(new S2CTagsPacket())
 
-        this.sendPacket(new S2CEntityStatusPacket(this.player.entityID, EntityStatus.PLAYER_OP_0))
+        this.sendPacket(new S2CEntityStatusPacket(this.player.id, EntityStatus.PLAYER_OP_0))
 
         // TODO Declare Commands
 
         this.sendPacket(new S2CUnlockRecipesPacket(UnlockRecipesAction.INIT))
 
-        this.sendPacket(S2CPlayerPositionAndLookPacket.fromPosition(new Position()))
+        this.sendPacket(S2CPlayerPositionAndLookPacket.fromPosition(this.player.position))
 
-        this.sendPacket(new S2CPlayerInfoPacket(PlayerInfoAction.ADD_PLAYER, [this.player.playerInfo]))
-        this.sendPacket(new S2CPlayerInfoPacket(PlayerInfoAction.UPDATE_LATENCY, [this.player.playerInfo]))
+        // Send player info to all clients
+        MinecraftServer.INSTANCE.emitPacketToAllPlayers(
+            new S2CPlayerInfoPacket(PlayerInfoAction.ADD_PLAYER, [this.player.playerInfo])
+        )
+        MinecraftServer.INSTANCE.emitPacketToAllPlayers(
+            new S2CPlayerInfoPacket(PlayerInfoAction.UPDATE_LATENCY, [this.player.playerInfo])
+        )
+        MinecraftServer.INSTANCE.emitPacketToAllPlayers(
+            new S2CPlayerInfoPacket(PlayerInfoAction.UPDATE_GAME_MODE, [this.player.playerInfo])
+        )
 
-        this.sendPacket(new S2CUpdateViewPositionPacket(this.player.chunkX, this.player.chunkZ))
+        // Add player to world and tell other clients that need to know
+        World.OVERWORLD.addEntity(this.player)
+
+        this.sendPacket(
+            new S2CUpdateViewPositionPacket(this.player.position.asChunkPos().x, this.player.position.asChunkPos().z)
+        )
 
         // TODO Update Light
 
@@ -96,11 +110,19 @@ export default class LoginPacketHandler extends AbstractPacketHandler {
 
         this.sendPacket(new S2CInitializeWorldBorderPacket())
 
-        this.sendPacket(new S2CSpawnPositionPacket(new Vector(0, 0, 0), 0))
+        // TODO implement spawn position (for now it is always the origin)
+        this.sendPacket(new S2CSpawnPositionPacket(BlockPos.ZERO, 0))
 
-        this.sendPacket(new S2CUpdateViewPositionPacket(this.player.chunkX, this.player.chunkZ))
+        this.sendPacket(S2CPlayerPositionAndLookPacket.fromPosition(this.player.position))
 
-        this.sendPacket(S2CPlayerPositionAndLookPacket.fromPosition(Position.ORIGIN))
+        // TODO Wait for teleport confirm before sending more packets
+
+        // Send all the entities in range of the player
+        for (const entity of this.player.getEntitiesInViewableRange()) {
+            this.sendPacket(entity.createSpawnPacket())
+        }
+
+        // TODO Send inventory
     }
 
     private onEncryptionResponse(this: Client, packet: C2SEncryptionResponsePacket) {

@@ -138,19 +138,19 @@ describe('ClientBoundPacketBuffer writes correctly', () => {
 
     it('Writes Position (0, 0, 1) Correctly', () => {
         let buff = new ClientBoundPacketBuffer()
-        buff.writePosition(new Vector(0, 0, 1))
+        buff.writeBlockPos(new Vector(0, 0, 1))
         expect(new ServerBoundPacketBuffer(buff.serialize()).readPosition()).toEqual(new Vector(0, 0, 1))
     })
 
     it('Writes Position (12, 4, 1) Correctly', () => {
         let buff = new ClientBoundPacketBuffer()
-        buff.writePosition(new Vector(12, 4, 1))
+        buff.writeBlockPos(new Vector(12, 4, 1))
         expect(new ServerBoundPacketBuffer(buff.serialize()).readPosition()).toEqual(new Vector(12, 4, 1))
     })
 
     it('Writes Position (3, -5, 0) Correctly', () => {
         let buff = new ClientBoundPacketBuffer()
-        buff.writePosition(new Vector(3, -5, 0))
+        buff.writeBlockPos(new Vector(3, -5, 0))
         expect(new ServerBoundPacketBuffer(buff.serialize()).readPosition()).toEqual(new Vector(3, -5, 0))
     })
 

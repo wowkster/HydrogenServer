@@ -1,9 +1,9 @@
-import Registry, { createGetId } from './Registry'
+import Registry, { createGetId } from '../registry/Registry'
 
 const ENTITY_TYPE_SECTION = Registry.getEntityTypes()
 const getId = createGetId(ENTITY_TYPE_SECTION)
 
-export enum EntityTypes {
+export enum EntityType {
     DEFAULT = getId(ENTITY_TYPE_SECTION.default),
     AREA_EFFECT_CLOUD = getId('area_effect_cloud'),
     ARMOR_STAND = getId('armor_stand'),
