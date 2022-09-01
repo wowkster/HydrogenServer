@@ -2,8 +2,6 @@ import { performance } from 'node:perf_hooks'
 import net from 'net'
 import chalk from 'chalk'
 
-import './entity/Entity'
-
 import './util/MathUtils'
 
 import ServerBoundPacketBuffer from './network/ServerBoundPacketBuffer'
@@ -16,6 +14,7 @@ import MathUtils from './util/MathUtils'
 import S2CKeepAlivePacket from './network/packets/play/S2CKeepAlivePacket'
 import World from './world/World'
 import S2CPacket from './network/packets/S2CPacket';
+import * as uuid from 'uuid';
 
 interface Tick {
     start: number

@@ -4,11 +4,11 @@ import S2CPacket from '../network/packets/S2CPacket'
 
 import Entity from '../entity/Entity'
 
-// import ArmorStandEntity from '../entity/decoration/ArmorStandEntity'
-// import ChickenEntity from '../entity/passive/ChickenEntity'
-// import CowEntity from '../entity/passive/CowEntity'
-// import PigEntity from '../entity/passive/PigEntity'
-// import SheepEntity from '../entity/passive/SheepEntity'
+import ArmorStandEntity from '../entity/decoration/ArmorStandEntity'
+import ChickenEntity from '../entity/passive/ChickenEntity'
+import CowEntity from '../entity/passive/CowEntity'
+import PigEntity from '../entity/passive/PigEntity'
+import SheepEntity from '../entity/passive/SheepEntity'
 import Player from '../entity/player/Player'
 
 export default class World {
@@ -23,11 +23,11 @@ export default class World {
 
         this.entities = new Set()
 
-        // this.addEntity(new ArmorStandEntity(0, 0, 0))
-        // this.addEntity(new PigEntity(1, 0, 0))
-        // this.addEntity(new CowEntity(2, 0, 0))
-        // this.addEntity(new SheepEntity(3, 0, 0))
-        // this.addEntity(new ChickenEntity(4, 0, 0))
+        this.addEntity(new ArmorStandEntity(0, 0, 0))
+        this.addEntity(new PigEntity(1, 0, 0))
+        this.addEntity(new CowEntity(2, 0, 0))
+        this.addEntity(new SheepEntity(3, 0, 0))
+        this.addEntity(new ChickenEntity(4, 0, 0))
     }
 
     tick() {
