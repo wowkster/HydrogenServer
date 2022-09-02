@@ -1,20 +1,39 @@
-import { performance } from 'node:perf_hooks'
-import net from 'net'
 import chalk from 'chalk'
+import net from 'net'
+import { performance } from 'node:perf_hooks'
+
+import Entity from './entity/Entity'
+import World from './world/World'
+export { Entity }
+export { World }
 
 import './util/MathUtils'
 
-import ServerBoundPacketBuffer from './network/ServerBoundPacketBuffer'
 import Client from './client/Client'
-import ServerBoundPacketManager from './network/ServerBoundPacketManager'
+import BlockPos from './datatypes/BlockPos'
+import { Difficulty } from './datatypes/PlayEnums'
 import { UUIDResolvable } from './datatypes/UUID'
 import Player from './entity/player/Player'
-import RollingArray from './util/RollingArray'
+import S2CChunkDataAndUpdateLightPacket from './network/packets/play/S2CChunkDataAndUpdateLightPacket'
+import S2CDeclareRecipesPacket from './network/packets/play/S2CDeclareRecipesPacket'
+import S2CEntityStatusPacket, { EntityStatus } from './network/packets/play/S2CEntityStatusPacket'
+import S2CHeldItemChangePacket from './network/packets/play/S2CHeldItemChangePacket'
+import S2CInitializeWorldBorderPacket from './network/packets/play/S2CInitializeWorldBorderPacket'
+import S2CJoinGamePacket from './network/packets/play/S2CJoinGamePacket'
+import S2CPlayerAbilitiesPacket from './network/packets/play/S2CPlayerAbilitiesPacket'
+import S2CPlayerInfoPacket, { PlayerInfoAction } from './network/packets/play/S2CPlayerInfoPacket'
+import S2CPlayerPositionAndLookPacket from './network/packets/play/S2CPlayerPositionAndLookPacket'
+import S2CPluginMessagePacket from './network/packets/play/S2CPluginMessagePacket'
+import S2CServerDifficultyPacket from './network/packets/play/S2CServerDifficultyPacket'
+import S2CSpawnPositionPacket from './network/packets/play/S2CSpawnPositionPacket'
+import S2CTagsPacket from './network/packets/play/S2CTagsPacket'
+import S2CUnlockRecipesPacket, { UnlockRecipesAction } from './network/packets/play/S2CUnlockRecipesPacket'
+import S2CUpdateViewPositionPacket from './network/packets/play/S2CUpdateViewPositionPacket'
+import S2CPacket from './network/packets/S2CPacket'
+import ServerBoundPacketBuffer from './network/ServerBoundPacketBuffer'
+import ServerBoundPacketManager from './network/ServerBoundPacketManager'
 import MathUtils from './util/MathUtils'
-import S2CKeepAlivePacket from './network/packets/play/S2CKeepAlivePacket'
-import World from './world/World'
-import S2CPacket from './network/packets/S2CPacket';
-import * as uuid from 'uuid';
+import RollingArray from './util/RollingArray'
 
 interface Tick {
     start: number
@@ -26,7 +45,7 @@ export default class MinecraftServer {
     static readonly PROTO_VERSION = 758
     static readonly MC_VERSION = '1.18.2'
     static readonly INSTANCE = new MinecraftServer()
-    
+
     static readonly ONLINE_MODE = false
     static readonly PACKET_COMPRESSION_THRESHOLD = 1_000
 
@@ -70,6 +89,7 @@ export default class MinecraftServer {
                 console.log(chalk.yellow(`Connection from ${remoteAddress} closed`))
                 this.clients.delete(remoteAddress)
                 client.player?.onDisconnect()
+                client.packetHandler?.onDisconnected()
             })
             conn.on('error', err => {
                 console.log(chalk.redBright(`Connection ${remoteAddress} error:`), err.message)
@@ -141,20 +161,7 @@ export default class MinecraftServer {
 
     async tick() {
         for (let client of this.clients.values()) {
-            // If client has not responded for over 30 seconds, disconnect them
-            if (client.waitingForKeepAlive && client.lastKeepAliveReceived.getTime() < Date.now() - 1000 * 30) {
-                client.disconnect('Keepalive timeout')
-                continue
-            }
-
-            // Send keepalive packets every 10 seconds
-            if (!client.waitingForKeepAlive && client.lastKeepAliveReceived.getTime() < Date.now() - 1000 * 10) {
-                const id = Math.floor(Math.random() * 0xffff)
-
-                client.lastKeepAliveIdSent = id
-                client.waitingForKeepAlive = true
-                client.sendPacket(new S2CKeepAlivePacket(id))
-            }
+            client.packetHandler.tick()
         }
 
         World.OVERWORLD.tick()
@@ -189,5 +196,89 @@ export default class MinecraftServer {
 
         // Calculate the number of ticks per second since the oldest tick (< 1m old) in the history
         return MathUtils.clamp(lastMinute.length / secondsSinceOldestTick, 0, MinecraftServer.MAX_TPS)
+    }
+
+    onPlayerConnect(client: Client, player: Player) {
+        client.sendPacket(new S2CJoinGamePacket(player.id))
+
+        client.sendPacket(S2CPluginMessagePacket.BRAND_PACKET)
+
+        client.sendPacket(new S2CServerDifficultyPacket(Difficulty.EASY, true))
+
+        client.sendPacket(new S2CPlayerAbilitiesPacket(player.abilities))
+
+        client.sendPacket(new S2CHeldItemChangePacket(0))
+
+        client.sendPacket(new S2CDeclareRecipesPacket())
+
+        client.sendPacket(new S2CTagsPacket())
+
+        client.sendPacket(new S2CEntityStatusPacket(player.id, EntityStatus.PLAYER_OP_0))
+
+        // TODO Declare Commands
+
+        client.sendPacket(new S2CUnlockRecipesPacket(UnlockRecipesAction.INIT))
+
+        client.sendPacket(S2CPlayerPositionAndLookPacket.fromPosition(player.position))
+
+        // Send player info to all clients
+        MinecraftServer.INSTANCE.emitPacketToAllPlayers(
+            new S2CPlayerInfoPacket(PlayerInfoAction.ADD_PLAYER, [player.playerInfo])
+        )
+        MinecraftServer.INSTANCE.emitPacketToAllPlayers(
+            new S2CPlayerInfoPacket(PlayerInfoAction.UPDATE_LATENCY, [player.playerInfo])
+        )
+        MinecraftServer.INSTANCE.emitPacketToAllPlayers(
+            new S2CPlayerInfoPacket(PlayerInfoAction.UPDATE_GAME_MODE, [player.playerInfo])
+        )
+
+        // Add player to world and tell other clients that need to know
+        World.OVERWORLD.addEntity(player)
+
+        client.sendPacket(
+            new S2CUpdateViewPositionPacket(player.position.asChunkPos().x, player.position.asChunkPos().z)
+        )
+
+        // TODO Update Light
+
+        for (let x = -4; x < 4; x++) {
+            for (let z = -4; z < 4; z++) {
+                if (x <= 2 && z <= 2) {
+                    client.sendPacket(
+                        new S2CChunkDataAndUpdateLightPacket(
+                            x,
+                            z,
+                            S2CChunkDataAndUpdateLightPacket.FLAT_CHUNK_DATA,
+                            S2CChunkDataAndUpdateLightPacket.EMPTY_LIGHT_DATA
+                        )
+                    )
+                } else {
+                    client.sendPacket(
+                        new S2CChunkDataAndUpdateLightPacket(
+                            x,
+                            z,
+                            S2CChunkDataAndUpdateLightPacket.EMPTY_CHUNK_DATA,
+                            S2CChunkDataAndUpdateLightPacket.EMPTY_LIGHT_DATA
+                        )
+                    )
+                }
+            }
+        }
+
+        client.sendPacket(new S2CInitializeWorldBorderPacket())
+
+        // TODO implement spawn position (for now it is always the origin)
+        client.sendPacket(new S2CSpawnPositionPacket(BlockPos.ZERO, 0))
+
+        client.sendPacket(S2CPlayerPositionAndLookPacket.fromPosition(player.position))
+
+        // TODO Wait for teleport confirm before sending more packets
+
+        // Send all the entities in range of the player
+        for (const entity of player.getEntitiesInViewableRange()) {
+            client.sendPacket(entity.createSpawnPacket())
+        }
+
+        // TODO Send inventory
     }
 }

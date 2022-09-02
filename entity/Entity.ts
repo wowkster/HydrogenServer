@@ -3,8 +3,11 @@ import UUID from '../datatypes/UUID'
 import { EntityType } from './EntityType'
 import Position from '../datatypes/Position'
 import EntityPosition from '../datatypes/EntityPosition'
-import S2CSpawnEntityPacket from '../network/packets/play/S2CSpawnEntityPacket';
-import S2CPacket from '../network/packets/S2CPacket';
+import S2CSpawnEntityPacket from '../network/packets/play/S2CSpawnEntityPacket'
+import S2CPacket from '../network/packets/S2CPacket'
+import S2CEntityVelocityPacket from '../network/packets/play/S2CEntityVelocityPacket'
+import Player from './player/Player'
+import S2CPlayerPositionAndLookPacket from '../network/packets/play/S2CPlayerPositionAndLookPacket'
 
 export default class Entity {
     static ENTITY_COUNTER = 0
@@ -16,7 +19,10 @@ export default class Entity {
 
     prevPosition: EntityPosition
     position: EntityPosition
+
     velocity: Vector
+    private velocityModified: boolean = false
+
     onGround: boolean = false
 
     glowing: boolean = false
@@ -31,13 +37,20 @@ export default class Entity {
 
         this.type = type
 
-        this.prevPosition = new EntityPosition()
-        this.position = new EntityPosition()
+        this.prevPosition = new EntityPosition(0, 1, 0)
+        this.position = new EntityPosition(0, 1, 0)
+
+        // Proxy to schedule an update any time that the value is changed
         this.velocity = new Vector()
     }
 
     public tick() {
-        // Check if was teleported
+        // Send sync packet if needed
+        if (this.velocityModified) {
+            this.world.emitPacketToPlayersInRangeOfEntity(S2CEntityVelocityPacket.fromEntity(this), this)
+        }
+
+        // Update position
         this.position.addVec(this.velocity)
 
         // If position has changed since last tick, send correct position packet
@@ -45,13 +58,30 @@ export default class Entity {
         const posChanged = !this.position.asPosition().equals(this.prevPosition.asPosition())
         const rotationChanged = !this.position.equalsRotation(this.prevPosition)
 
-        if (posChanged && rotationChanged) {
-            // Send position rotation packet
-        } else if (posChanged) {
-            // Send position packet
-        } else if (rotationChanged) {
-            // Send rotation packet
-        }
+        // if (posChanged || rotationChanged) {
+        //     if (this.prevPosition.squaredDistanceTo(this.position) > 8) {
+        //         let thisPlayer = this instanceof Player ? (this as Player) : null
+
+        //         this.world.emitPacketToPlayersInRangeOfEntity(S2CEntityTeleportPacket.fromEntity(this), this)
+        //         thisPlayer?.client.sendPacket(S2CPlayerPositionAndLookPacket.fromPlayer(thisPlayer))
+        //     } else {
+        //         if (posChanged && rotationChanged) {
+        //             // Send position rotation packet
+        //             this.world.emitPacketToPlayersInRangeOfEntity(
+        //                 S2CEntityPositionRotationPacket.fromEntity(this),
+        //                 this
+        //             )
+        //         } else if (posChanged) {
+        //             // Send position packet
+        //             this.world.emitPacketToPlayersInRangeOfEntity(S2CEntityPositionPacket.fromEntity(this), this)
+        //         } else if (rotationChanged) {
+        //             // Send rotation packet
+        //             this.world.emitPacketToPlayersInRangeOfEntity(S2CEntityPositionPacket.fromEntity(this), this)
+        //         }
+        //     }
+        // }
+
+        this.prevPosition = this.position.clone()
     }
 
     public isInRange(other: Entity, radius: number) {
@@ -100,6 +130,14 @@ export default class Entity {
 
     get world() {
         return this.position.world
+    }
+
+    getPlayersInViewableRange() {
+        return this.world.getPlayersInViewableRangeOfEntity(this)
+    }
+
+    scheduleVelocityUpdate() {
+        this.velocityModified = true
     }
 
     createSpawnPacket(): S2CPacket {

@@ -2,8 +2,10 @@ import nbt, { NBT } from 'prismarine-nbt'
 
 import BitSet from '../../../datatypes/BitSet'
 import Position from '../../../datatypes/Position'
+import { Block } from '../../../registry/Block'
 import ClientBoundPacketBuffer from '../../ClientBoundPacketBuffer'
 import S2CPacket from '../S2CPacket'
+import { BlockState } from '../../../registry/BlockState';
 
 interface ChunkData {
     readonly heightMaps: NBT
@@ -104,6 +106,82 @@ export default class S2CChunkDataAndUpdateLightPacket extends S2CPacket {
             blockData.writeVarInt(0) // TODO replace with air id
             blockData.writeVarInt(0) // Data Array Length
             // No data array
+
+            // Biomes (Paletted Container)
+            blockData.writeUnsignedByte(0) // Bits Per Entry
+            blockData.writeVarInt(0) // TODO replace with plains id
+            blockData.writeVarInt(0) // Data Array Length
+            // No data array
+        }
+
+        return {
+            heightMaps: heightMap,
+            blockData: blockData.serialize(true),
+            blockEntities: [],
+        }
+    }
+
+    static get FLAT_CHUNK_DATA(): ChunkData {
+        // Create height map
+
+        const bitsPerBlock = Math.ceil(Math.log2(384 + 1))
+
+        const blocksPerLong = Math.floor(64 / bitsPerBlock)
+        const longsRequired = Math.ceil(256 / blocksPerLong)
+
+        const heightMap = nbt.comp({
+            MOTION_BLOCKING: nbt.longArray(new Array(longsRequired).fill(0n)),
+        }) as NBT
+
+        // Create block data
+
+        const blockData = new ClientBoundPacketBuffer()
+
+        const numSections = 384 / 16
+
+        for (let i = 0; i < numSections; i++) {
+            if (i === 4) { // Y = 0-16 section
+                blockData.writeShort(16) // Block count (# non-air blocks)
+
+                // TODO write a chunk data serializer and deserializer
+
+                // Block states (Paletted Container)
+                blockData.writeUnsignedByte(4) // Bits Per Entry
+
+                // Pallette
+                {
+                    blockData.writeVarInt(2) // Pallette length
+                    blockData.writeVarInt(BlockState.AIR) // Index 0000
+                    blockData.writeVarInt(BlockState.GRASS_BLOCK) // Index 0001
+                }
+
+                // Data Array
+                blockData.writeVarInt(4096 / 16) // Data Array Length
+
+                // Flat Grass Plane (Y = 0)
+                for (let i = 0; i < 16; i++) {
+                    blockData.writeLong(0x1111111111111111n)
+                }
+
+                // All Air (Y = 1-16)
+                for (let i = 256; i < 4096; i += 16) {
+                    blockData.writeLong(0x0000000000000000n)
+                }
+            } else {
+                blockData.writeShort(0) // Block count (# non-air blocks)
+
+                // Block states (Paletted Container)
+                blockData.writeUnsignedByte(0) // Bits Per Entry
+
+                // Pallette
+                {
+                    blockData.writeVarInt(BlockState.AIR) // Single valued pallette id
+                }
+
+                // Data Array
+                blockData.writeVarInt(0) // Data Array Length
+                // No data array
+            }
 
             // Biomes (Paletted Container)
             blockData.writeUnsignedByte(0) // Bits Per Entry

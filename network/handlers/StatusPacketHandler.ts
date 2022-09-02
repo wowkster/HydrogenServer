@@ -9,6 +9,8 @@ import S2CResponsePacket from '../packets/status/S2CResponsePacket'
 import AbstractPacketHandler from './AbstractPacketHandler'
 
 export default class StatusPacketHandler extends AbstractPacketHandler {
+    private responseSent: boolean = false
+    
     init() {
         this.packetMap = new Map([
             [0x00, [C2SRequestPacket, this.onRequest]],
@@ -16,10 +18,14 @@ export default class StatusPacketHandler extends AbstractPacketHandler {
         ])
     }
 
-    private onRequest(this: Client, packet: C2SRequestPacket) {
+    private onRequest(packet: C2SRequestPacket) {
+        if (this.responseSent) {
+            this.client.conn.destroy()
+            return
+        }
+        
         // Send SPL JSON response
-
-        this.sendPacket(
+        this.client.sendPacket(
             new S2CResponsePacket({
                 version: {
                     name: MinecraftServer.MC_VERSION,
@@ -36,11 +42,13 @@ export default class StatusPacketHandler extends AbstractPacketHandler {
                 favicon: `data:image/png;base64,${fs.readFileSync('./server-icon.png').toString('base64')}`,
             })
         )
+
+        this.responseSent = true
     }
 
-    private onPing(this: Client, packet: C2SPingPacket) {
+    private onPing(packet: C2SPingPacket) {
         // Send back ping payload
-        this.sendPacket(new S2CPongPacket(packet.payload))
-        this.conn.destroy()
+        this.client.sendPacket(new S2CPongPacket(packet.payload))
+        this.client.conn.destroy()
     }
 }

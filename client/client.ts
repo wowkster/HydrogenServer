@@ -4,6 +4,8 @@ import { ClientSettings } from '../datatypes/client/ClientSettings'
 import chalk from 'chalk'
 import Player from '../entity/player/Player'
 import S2CPlayDisconnectPacket from '../network/packets/play/S2CPlayDisconnectPacket'
+import AbstractPacketHandler from '../network/handlers/AbstractPacketHandler'
+import HandshakePacketHandler from '../network/handlers/HandshakePacketHandler'
 
 export enum ConnectionState {
     HANDSHAKE = 0,
@@ -17,6 +19,7 @@ export default class Client {
     conn: Socket
 
     // Connection
+    packetHandler: AbstractPacketHandler
     state: ConnectionState
     protoVersion?: number
     serverAddress?: string
@@ -30,34 +33,16 @@ export default class Client {
     // Player
     player?: Player
 
-    // Keep Alive
-    waitingForKeepAlive: boolean
-    lastKeepAliveIdSent: number
-    lastKeepAliveReceived: Date
-
     constructor(conn: Socket) {
         this.conn = conn
         this.state = ConnectionState.HANDSHAKE
+        this.packetHandler = new HandshakePacketHandler(this)
 
         this.compressionEnabled = false
-
-        this.waitingForKeepAlive = false
-        this.lastKeepAliveIdSent = 0
-        this.lastKeepAliveReceived = new Date()
     }
 
     sendPacket(packet: S2CPacket) {
         console.log(chalk.red('S2C Packet:'), packet)
         this.conn.write(packet.serialize(this.compressionEnabled))
     }
-
-    disconnect(reason: string) {
-        this.sendPacket(
-            new S2CPlayDisconnectPacket({
-                text: reason,
-            })
-        )
-        this.conn.destroy()
-    }
-
 }

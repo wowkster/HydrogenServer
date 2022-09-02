@@ -53,4 +53,15 @@ export default class Vector {
     magnitude() {
         return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z)
     }
+
+    squaredDistanceTo(other: Vector) {
+        const d = other.x - this.x
+        const e = other.y - this.y
+        const f = other.z - this.z
+        return d * d + e * e + f * f
+    }
+
+    distanceTo(other: Vector) {
+        return Math.sqrt(this.squaredDistanceTo(other))
+    }
 }

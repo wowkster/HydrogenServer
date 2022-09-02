@@ -1,5 +1,5 @@
 import S2CPacket from '../S2CPacket'
-import Entity from '../../../entity/Entity'
+import { Entity } from '../../..'
 
 export default class S2CDestroyEntitiesPacket extends S2CPacket {
     constructor(entityIds: number[]) {

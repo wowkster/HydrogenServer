@@ -2,7 +2,7 @@ import Identifier from '../datatypes/Identifier'
 import S2CDestroyEntitiesPacket from '../network/packets/play/S2CDestroyEntitiesPacket'
 import S2CPacket from '../network/packets/S2CPacket'
 
-import Entity from '../entity/Entity'
+import { Entity } from '..'
 
 import ArmorStandEntity from '../entity/decoration/ArmorStandEntity'
 import ChickenEntity from '../entity/passive/ChickenEntity'
@@ -23,11 +23,11 @@ export default class World {
 
         this.entities = new Set()
 
-        this.addEntity(new ArmorStandEntity(0, 0, 0))
-        this.addEntity(new PigEntity(1, 0, 0))
-        this.addEntity(new CowEntity(2, 0, 0))
-        this.addEntity(new SheepEntity(3, 0, 0))
-        this.addEntity(new ChickenEntity(4, 0, 0))
+        this.addEntity(new ArmorStandEntity(0, 1, 0))
+        this.addEntity(new PigEntity(1, 1, 0))
+        this.addEntity(new CowEntity(2, 1, 0))
+        this.addEntity(new SheepEntity(3, 1, 0))
+        this.addEntity(new ChickenEntity(4, 1, 0))
     }
 
     tick() {
@@ -41,11 +41,13 @@ export default class World {
      */
     addEntity(entity: Entity) {
         this.entities.add(entity)
-
+        
         // Send spawn packet
         this.emitPacketToPlayersInRangeOfEntity(entity.createSpawnPacket(), entity)
-
+        
+        
         // TODO Send entity metadata packet
+
     }
 
     /**
@@ -76,6 +78,7 @@ export default class World {
         const res = []
 
         for (const player of this.players) {
+            if (player === entity) continue
             if (player.isInRange(entity, 128)) {
                 res.push(player)
             }

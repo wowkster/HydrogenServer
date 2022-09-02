@@ -1,8 +1,8 @@
-import UUID from '../datatypes/UUID';
-import S2CSpawnLivingEntityPacket from '../network/packets/play/S2CSpawnLivingEntityPacket';
-import S2CPacket from '../network/packets/S2CPacket';
-import Entity from './Entity';
-import { EntityType } from './EntityType';
+import UUID from '../datatypes/UUID'
+import S2CSpawnLivingEntityPacket from '../network/packets/play/S2CSpawnLivingEntityPacket'
+import S2CPacket from '../network/packets/S2CPacket'
+import { Entity } from '..'
+import { EntityType } from './EntityType'
 
 export default abstract class LivingEntity extends Entity {
     health: number = this.getMaxHealth()
@@ -12,7 +12,7 @@ export default abstract class LivingEntity extends Entity {
         super(type, uuid)
     }
 
-    abstract getMaxHealth(): number;
+    abstract getMaxHealth(): number
 
     createSpawnPacket(): S2CPacket {
         return S2CSpawnLivingEntityPacket.fromEntity(this)

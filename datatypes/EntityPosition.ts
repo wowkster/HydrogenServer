@@ -1,5 +1,5 @@
 import Position from './Position'
-import World from '../world/World'
+import { World } from '..'
 
 /**
  * Represents an entity's position in the world
@@ -33,7 +33,7 @@ export default class EntityPosition extends Position {
     }
 
     equalsPosition(other: EntityPosition) {
-        return this.x === other.x && this.y === other.y && this.z === other.z 
+        return this.x === other.x && this.y === other.y && this.z === other.z
     }
 
     equalsRotation(other: EntityPosition) {

@@ -60,7 +60,7 @@ export default class Player extends LivingEntity {
     }
 
     getEntitiesInViewableRange() {
-        return this.world.getEntitiesInViewableRangeOfPlayer(this)
+        return this.world.getEntitiesInViewableRangeOfPlayer(this).filter(e => e !== this)
     }
 
     createSpawnPacket() {

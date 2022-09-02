@@ -1,7 +1,7 @@
 import UUID from '../../../datatypes/UUID'
 import { EntityType } from '../../../entity/EntityType'
 import S2CPacket from '../S2CPacket'
-import Entity from '../../../entity/Entity'
+import { Entity } from '../../..'
 
 enum ItemFrameOrientation {
     DOWN = 0,
@@ -64,9 +64,9 @@ export default class S2CSpawnEntityPacket extends S2CPacket {
 
     static fromEntity(entity: Entity) {
         const data = 1
-        
+
         // TODO assign data based on entity type
-        
+
         return new S2CSpawnEntityPacket(
             entity.id,
             entity.uuid,

@@ -1,10 +1,30 @@
-import Registry, { createGetId } from './Registry'
+import fs from 'fs'
+import { MinecraftIdentifier } from './Registry';
 
-const BLOCKS_SECTION = Registry.getBlocks()
-const getId = createGetId(BLOCKS_SECTION)
+interface BlockStatesFile {
+    [key: MinecraftIdentifier]: {
+        properties: {
+            [key: string]: string[]
+        }
+        states: {
+            id: number
+            default: boolean
+            properties: {
+                [key: string]: string
+            }
+        }[]
+    }
+}
 
-export enum Blocks {
-    DEFAULT = getId(BLOCKS_SECTION.default),
+const BLOCK_STATES: BlockStatesFile = JSON.parse(fs.readFileSync('.generated/reports/blocks.json', 'utf-8'))
+
+function getId(identifier: string): number {
+    if (!identifier.startsWith('minecraft:')) identifier = `minecraft:${identifier}`
+
+    return BLOCK_STATES[identifier as MinecraftIdentifier]!.states.find(s => s.default)!.id
+}
+
+export enum BlockState {
     AIR = getId('air'),
     STONE = getId('stone'),
     GRANITE = getId('granite'),

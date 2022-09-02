@@ -1,7 +1,5 @@
 // Heck to avoid circular dependency
-const Entity = (await import('../Entity')).default
-type Entity = InstanceType<Awaited<typeof import('../Entity')>['default']>
-
+import { Entity } from '../..'
 import { EntityType } from '../EntityType'
 
 export default class ArmorStandEntity extends Entity {
