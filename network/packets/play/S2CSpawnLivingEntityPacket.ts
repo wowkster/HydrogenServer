@@ -29,7 +29,7 @@ export default class S2CSpawnLivingEntityPacket extends S2CPacket {
                 throw new Error('Paintings should only be spawned with the S2CSpawnPainting packet!')
             case EntityType.MARKER:
                 throw new Error(
-                    'Marker entities should never be spawned! (See https://minecraft.fandom.com/wiki/Marker)'
+                    'Marker entities should never be spawned! (See https://minecraft.wiki/w/Marker)'
                 )
             case EntityType.AREA_EFFECT_CLOUD:
             case EntityType.ARROW:
